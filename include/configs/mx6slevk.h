@@ -29,7 +29,7 @@
 #define CONFIG_MXC_UART_BASE		UART1_IPS_BASE_ADDR
 
 /* MMC Configs */
-#define CONFIG_SYS_FSL_ESDHC_ADDR	USDHC2_BASE_ADDR
+#define CONFIG_SYS_FSL_ESDHC_ADDR	USDHC1_BASE_ADDR
 
 /* I2C Configs */
 #define CONFIG_CMD_I2C
@@ -69,7 +69,7 @@
 	"fdt_addr=0x88000000\0" \
 	"boot_fdt=try\0" \
 	"ip_dyn=yes\0" \
-	"mmcdev=1\0" \
+	"mmcdev=0\0" \
 	"mmcpart=1\0" \
 	"mmcroot=/dev/mmcblk0p2 rootwait rw\0" \
 	"mmcargs=setenv bootargs console=${console},${baudrate} " \
@@ -140,9 +140,9 @@
 #define CONFIG_STACKSIZE		SZ_128K
 
 /* Physical Memory Map */
-#define CONFIG_NR_DRAM_BANKS		1
+#define CONFIG_NR_DRAM_BANKS		8  //collin_add from 1 to 8
 #define PHYS_SDRAM			MMDC0_ARB_BASE_ADDR
-#define PHYS_SDRAM_SIZE			SZ_1G
+#define PHYS_SDRAM_SIZE			SZ_512M //collin_add from SZ_1G to SZ_512M
 
 #define CONFIG_SYS_SDRAM_BASE		PHYS_SDRAM
 #define CONFIG_SYS_INIT_RAM_ADDR	IRAM_BASE_ADDR
@@ -193,9 +193,9 @@
 #define CONFIG_USB_MAX_CONTROLLER_COUNT	2
 #endif
 
-#define CONFIG_SYS_FSL_USDHC_NUM	3
+#define CONFIG_SYS_FSL_USDHC_NUM	1  //collin_add from 3 to 1
 #if defined(CONFIG_ENV_IS_IN_MMC)
-#define CONFIG_SYS_MMC_ENV_DEV		1	/* SDHC2*/
+#define CONFIG_SYS_MMC_ENV_DEV		0	/* SDHC1*/
 #endif
 
 #define CONFIG_IMX_THERMAL

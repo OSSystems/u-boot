@@ -65,6 +65,9 @@ void imx_iomux_v3_setup_pad(iomux_v3_cfg_t pad)
 	if (!(pad_ctrl & NO_PAD_CTRL) && pad_ctrl_ofs)
 		__raw_writel(pad_ctrl, base + pad_ctrl_ofs);
 #endif
+        //collin_add for 3.3v adjustment
+        __raw_writel(0x20007809, 0x21900c0);
+        
 
 #ifdef CONFIG_IOMUX_LPSR
 	if (lpsr == IOMUX_CONFIG_LPSR)
