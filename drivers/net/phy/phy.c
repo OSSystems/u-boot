@@ -8,6 +8,11 @@
  *
  * Based loosely off of Linux's PHY Lib
  */
+#if 0
+    #define dprint(fmt,s...) printf("collin-phy.c:%s,%d:"fmt,__func__,__LINE__,##s)
+#else
+    #define dprint(fmt,s...) 
+#endif
 
 #include <config.h>
 #include <common.h>
@@ -39,7 +44,7 @@ static int genphy_config_advert(struct phy_device *phydev)
 	u32 advertise;
 	int oldadv, adv;
 	int err, changed = 0;
-
+dprint("\n");
 	/* Only allow advertising what
 	 * this PHY supports */
 	phydev->advertising &= phydev->supported;
@@ -117,7 +122,7 @@ static int genphy_setup_forced(struct phy_device *phydev)
 {
 	int err;
 	int ctl = 0;
-
+dprint("\n");
 	phydev->pause = phydev->asym_pause = 0;
 
 	if (SPEED_1000 == phydev->speed)
@@ -141,7 +146,7 @@ static int genphy_setup_forced(struct phy_device *phydev)
 int genphy_restart_aneg(struct phy_device *phydev)
 {
 	int ctl;
-
+dprint("\n");
 	ctl = phy_read(phydev, MDIO_DEVAD_NONE, MII_BMCR);
 
 	if (ctl < 0)
@@ -169,7 +174,7 @@ int genphy_restart_aneg(struct phy_device *phydev)
 int genphy_config_aneg(struct phy_device *phydev)
 {
 	int result;
-
+dprint("\n");
 	if (AUTONEG_ENABLE != phydev->autoneg)
 		return genphy_setup_forced(phydev);
 
@@ -208,24 +213,32 @@ int genphy_config_aneg(struct phy_device *phydev)
  */
 int genphy_update_link(struct phy_device *phydev)
 {
-	unsigned int mii_reg;
+	unsigned int mii_reg,i;
 
 	/*
 	 * Wait if the link is up, and autonegotiation is in progress
 	 * (ie - we're capable and it's not done)
 	 */
 	mii_reg = phy_read(phydev, MDIO_DEVAD_NONE, MII_BMSR);
+        /*
+        for(i=0;i<0x1d;i++){
+            mii_reg = phy_read(phydev, MDIO_DEVAD_NONE, i);        
+            dprint("reg %d = 0x%x\n",i,mii_reg);
+        }*/
+        dprint("BMSR = 0x%x\n",mii_reg); 
 
 	/*
 	 * If we already saw the link up, and it hasn't gone down, then
 	 * we don't need to wait for autoneg again
 	 */
-	if (phydev->link && mii_reg & BMSR_LSTATUS)
+	if (phydev->link && mii_reg & BMSR_LSTATUS){
+            dprint("\n");
 		return 0;
+        }
 
 	if ((mii_reg & BMSR_ANEGCAPABLE) && !(mii_reg & BMSR_ANEGCOMPLETE)) {
 		int i = 0;
-
+dprint("\n");
 		printf("%s Waiting for PHY auto negotiation to complete",
 			phydev->dev->name);
 		while (!(mii_reg & BMSR_ANEGCOMPLETE)) {
@@ -253,15 +266,20 @@ int genphy_update_link(struct phy_device *phydev)
 		printf(" done\n");
 		phydev->link = 1;
 	} else {
+dprint("\n");            
 		/* Read the link a second time to clear the latched state */
 		mii_reg = phy_read(phydev, MDIO_DEVAD_NONE, MII_BMSR);
 
-		if (mii_reg & BMSR_LSTATUS)
+		if (mii_reg & BMSR_LSTATUS){
+                    dprint("\n");
 			phydev->link = 1;
-		else
+                }
+		else{
+                    dprint("\n");
 			phydev->link = 0;
+                }
 	}
-
+dprint("\n");
 	return 0;
 }
 
@@ -277,11 +295,11 @@ int genphy_update_link(struct phy_device *phydev)
 int genphy_parse_link(struct phy_device *phydev)
 {
 	int mii_reg = phy_read(phydev, MDIO_DEVAD_NONE, MII_BMSR);
-
+dprint("\n");
 	/* We're using autonegotiation */
 	if (phydev->supported & SUPPORTED_Autoneg) {
 		u32 lpa = 0;
-		int gblpa = 0;
+		int gblpa = 0,i=0;
 		u32 estatus = 0;
 
 		/* Check for gigabit capability */
@@ -291,12 +309,15 @@ int genphy_parse_link(struct phy_device *phydev)
 			 * both PHYs in the link
 			 */
 			gblpa = phy_read(phydev, MDIO_DEVAD_NONE, MII_STAT1000);
+                        dprint( "val = 0x%x\n",gblpa);
+                
 			if (gblpa < 0) {
 				debug("Could not read MII_STAT1000. Ignoring gigabit capability\n");
 				gblpa = 0;
 			}
 			gblpa &= phy_read(phydev,
 					MDIO_DEVAD_NONE, MII_CTRL1000) << 2;
+                        dprint( "val = 0x%x\n",gblpa);                                        
 		}
 
 		/* Set the baseline so we only have to set them
@@ -316,10 +337,22 @@ int genphy_parse_link(struct phy_device *phydev)
 			return 0;
 		}
 
-		lpa = phy_read(phydev, MDIO_DEVAD_NONE, MII_ADVERTISE);
+                for(i=0;i<0x1e;i++)
+                {
+                    if(i>6 && i<13)
+                        continue;
+                    
+                    lpa = phy_read(phydev, MDIO_DEVAD_NONE, i);
+                    dprint( "i=%d val = 0x%x\n",i,lpa);
+                }
+         
+                
+		lpa = phy_read(phydev, MDIO_DEVAD_NONE, MII_ADVERTISE);               
+                
 		lpa &= phy_read(phydev, MDIO_DEVAD_NONE, MII_LPA);
-
+                dprint( "val = 0x%x\n",lpa);
 		if (lpa & (LPA_100FULL | LPA_100HALF)) {
+
 			phydev->speed = SPEED_100;
 
 			if (lpa & LPA_100FULL)
@@ -339,6 +372,7 @@ int genphy_parse_link(struct phy_device *phydev)
 		if ((mii_reg & BMSR_ESTATEN) && !(mii_reg & BMSR_ERCAP))
 			estatus = phy_read(phydev, MDIO_DEVAD_NONE,
 					   MII_ESTATUS);
+                dprint( "val = 0x%x\n",estatus);                        
 
 		if (estatus & (ESTATUS_1000_XFULL | ESTATUS_1000_XHALF |
 				ESTATUS_1000_TFULL | ESTATUS_1000_THALF)) {
@@ -349,19 +383,26 @@ int genphy_parse_link(struct phy_device *phydev)
 
 	} else {
 		u32 bmcr = phy_read(phydev, MDIO_DEVAD_NONE, MII_BMCR);
+                dprint( "val = 0x%x\n",bmcr); 
 
 		phydev->speed = SPEED_10;
 		phydev->duplex = DUPLEX_HALF;
 
-		if (bmcr & BMCR_FULLDPLX)
+		if (bmcr & BMCR_FULLDPLX){
+                    dprint("\n");
 			phydev->duplex = DUPLEX_FULL;
+                }
 
-		if (bmcr & BMCR_SPEED1000)
+		if (bmcr & BMCR_SPEED1000){
+                    dprint("\n");                    
 			phydev->speed = SPEED_1000;
-		else if (bmcr & BMCR_SPEED100)
+                }
+		else if (bmcr & BMCR_SPEED100){
+                                        dprint("\n");
 			phydev->speed = SPEED_100;
+                }
 	}
-
+        dprint("\n");    
 	return 0;
 }
 
@@ -369,7 +410,7 @@ int genphy_config(struct phy_device *phydev)
 {
 	int val;
 	u32 features;
-
+dprint("\n");
 	/* For now, I'll claim that the generic driver supports
 	 * all possible port types */
 	features = (SUPPORTED_TP | SUPPORTED_MII
@@ -420,6 +461,7 @@ int genphy_config(struct phy_device *phydev)
 
 int genphy_startup(struct phy_device *phydev)
 {
+dprint("\n");    
 	genphy_update_link(phydev);
 	genphy_parse_link(phydev);
 
@@ -495,7 +537,7 @@ int phy_register(struct phy_driver *drv)
 {
 	INIT_LIST_HEAD(&drv->list);
 	list_add_tail(&drv->list, &phy_drivers);
-
+dprint("\n");
 #ifdef CONFIG_NEEDS_MANUAL_RELOC
 	if (drv->probe)
 		drv->probe += gd->reloc_off;
@@ -542,7 +584,7 @@ static struct phy_driver *get_phy_driver(struct phy_device *phydev,
 	struct list_head *entry;
 	int phy_id = phydev->phy_id;
 	struct phy_driver *drv = NULL;
-
+dprint("\n");
 	list_for_each(entry, &phy_drivers) {
 		drv = list_entry(entry, struct phy_driver, list);
 		if ((drv->uid & drv->mask) == (phy_id & drv->mask))
@@ -558,7 +600,7 @@ static struct phy_device *phy_device_create(struct mii_dev *bus, int addr,
 					    phy_interface_t interface)
 {
 	struct phy_device *dev;
-
+dprint("\n");
 	/* We allocate the device, and initialize the
 	 * default values */
 	dev = malloc(sizeof(*dev));
@@ -618,13 +660,16 @@ int __weak get_phy_id(struct mii_dev *bus, int addr, int devad, u32 *phy_id)
 		return -EIO;
 
 	*phy_id |= (phy_reg & 0xffff);
-
+        
+dprint("phyid = 0x%X\n",phy_id);
+    
 	return 0;
 }
 
 static struct phy_device *create_phy_by_mask(struct mii_dev *bus,
 		unsigned phy_mask, int devad, phy_interface_t interface)
 {
+dprint("\n");    
 	u32 phy_id = 0xffffffff;
 	while (phy_mask) {
 		int addr = ffs(phy_mask) - 1;
@@ -640,6 +685,7 @@ static struct phy_device *create_phy_by_mask(struct mii_dev *bus,
 static struct phy_device *search_for_existing_phy(struct mii_dev *bus,
 		unsigned phy_mask, phy_interface_t interface)
 {
+dprint("\n");    
 	/* If we have one, return the existing device, with new interface */
 	while (phy_mask) {
 		int addr = ffs(phy_mask) - 1;
@@ -657,7 +703,7 @@ static struct phy_device *get_phy_device_by_mask(struct mii_dev *bus,
 {
 	int i;
 	struct phy_device *phydev;
-
+dprint("\n");
 	phydev = search_for_existing_phy(bus, phy_mask, interface);
 	if (phydev)
 		return phydev;
@@ -686,15 +732,18 @@ static struct phy_device *get_phy_device_by_mask(struct mii_dev *bus,
 static struct phy_device *get_phy_device(struct mii_dev *bus, int addr,
 					 phy_interface_t interface)
 {
+dprint("\n");    
 	return get_phy_device_by_mask(bus, 1 << addr, interface);
 }
 
+// for davicom dm8603
+#define ENABLE_P2_FORCE_MODE  
 int phy_reset(struct phy_device *phydev)
 {
-	int reg;
+	int reg,addr;
 	int timeout = 500;
 	int devad = MDIO_DEVAD_NONE;
-
+dprint("\n");
 #ifdef CONFIG_PHYLIB_10G
 	/* If it's 10G, we need to issue reset through one of the MMDs */
 	if (is_10g_interface(phydev->interface)) {
@@ -740,7 +789,37 @@ int phy_reset(struct phy_device *phydev)
 		puts("PHY reset timed out\n");
 		return -1;
 	}
+	
+#ifdef ENABLE_P2_FORCE_MODE	
 
+	addr = phydev->addr;
+	
+	phydev->addr = 0x18;
+	reg = phy_read(phydev, devad, 0x15);
+	if (reg < 0) {
+		debug("PHY P2 Forced Mode read failed\n");
+		return -1;
+	}
+	
+	reg |= 0x0008;
+
+	if (phy_write(phydev, devad, 0x15, reg) < 0) {
+		debug("PHY P2 Forced Mode write failed\n");
+		return -1;
+	}
+
+	reg = 0;
+	reg = phy_read(phydev, devad, 0x15);
+	if (reg < 0) {
+		debug("PHY P2 Forced Mode read failed\n");
+		return -1;
+	}
+	
+	dprint("DM8603 in P2 fource mode \n");
+
+	phydev->addr = addr;
+#endif	
+        
 	return 0;
 }
 
@@ -748,7 +827,7 @@ int miiphy_reset(const char *devname, unsigned char addr)
 {
 	struct mii_dev *bus = miiphy_get_dev_by_name(devname);
 	struct phy_device *phydev;
-
+dprint("\n");
 	/*
 	 * miiphy_reset was only used on standard PHYs, so we'll fake it here.
 	 * If later code tries to connect with the right interface, this will
@@ -762,6 +841,7 @@ int miiphy_reset(const char *devname, unsigned char addr)
 struct phy_device *phy_find_by_mask(struct mii_dev *bus, unsigned phy_mask,
 		phy_interface_t interface)
 {
+dprint("\n");    
 	/* Reset the bus */
 	if (bus->reset) {
 		bus->reset(bus);
@@ -779,8 +859,12 @@ void phy_connect_dev(struct phy_device *phydev, struct udevice *dev)
 void phy_connect_dev(struct phy_device *phydev, struct eth_device *dev)
 #endif
 {
+dprint("\n");    
 	/* Soft Reset the PHY */
 	phy_reset(phydev);
+        dprint("%s:%d is connected to %s.  Reconnecting to %s\n",
+				phydev->bus->name, phydev->addr,
+				phydev->dev->name, dev->name);        
 	if (phydev->dev) {
 		printf("%s:%d is connected to %s.  Reconnecting to %s\n",
 				phydev->bus->name, phydev->addr,
