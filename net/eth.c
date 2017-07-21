@@ -6,6 +6,12 @@
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
+#if 0
+    #define dprint(fmt,s...) printf("collin-eth.c:%s,%d:"fmt,__func__,__LINE__,##s)
+#else
+    #define dprint(fmt,s...) 
+#endif
+
 #include <common.h>
 #include <command.h>
 #include <dm.h>
@@ -16,6 +22,7 @@
 #include <asm/errno.h>
 #include <dm/device-internal.h>
 #include <dm/uclass-internal.h>
+unsigned char *eth_get_ethaddr(void);
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -23,7 +30,7 @@ void eth_parse_enetaddr(const char *addr, uchar *enetaddr)
 {
 	char *end;
 	int i;
-
+	dprint("address=%s\n",addr);
 	for (i = 0; i < 6; ++i) {
 		enetaddr[i] = addr ? simple_strtoul(addr, &end, 16) : 0;
 		if (addr)
@@ -31,10 +38,49 @@ void eth_parse_enetaddr(const char *addr, uchar *enetaddr)
 	}
 }
 
+#define MAC_NUMBER 	6
+extern u16 mac_address[MAC_NUMBER];
+extern void EEPROM_MAC_write(u8* MAC);
+extern bool EEPROM_READY;
+
 int eth_getenv_enetaddr(char *name, uchar *enetaddr)
 {
+	int i;
+	u8 default_mac[MAC_NUMBER]={0},eeprom_mac[MAC_NUMBER]={0};
+
 	eth_parse_enetaddr(getenv(name), enetaddr);
-	return is_valid_ethaddr(enetaddr);
+
+	memcpy(default_mac,enetaddr,MAC_NUMBER);
+
+	//change from u16 to u8
+	for(i=0;i<MAC_NUMBER;i++)	eeprom_mac[i] = mac_address[i];
+	
+	//EEPROM not ready
+	if(EEPROM_READY == false)
+	{
+		dprint("eeprom not ready\n");
+		return false;
+	}
+	
+	//compare default_mac and eeprom_mac, if different, write default_mac by EEPROM
+	if( memcmp(default_mac,eeprom_mac,MAC_NUMBER) )
+	{
+		u8 buf[MAC_NUMBER];	
+ 		for(i=0;i<MAC_NUMBER;i++)	buf[i] = eeprom_mac[i];
+		printf("\nethaddr mac != eeprom mac, write to ethaddr\n");
+		eth_setenv_enetaddr(name,(uchar*)buf);
+		saveenv();
+		eth_parse_enetaddr(getenv(name), enetaddr);		
+		return false;
+	}
+	
+	if( !is_valid_ethaddr(enetaddr) )
+	{
+		printf("\nInvalid MAC address, please write MAC to EEPROM by MII cmds \n");
+		return false;
+	}
+		
+	return true;
 }
 
 int eth_setenv_enetaddr(char *name, const uchar *enetaddr)
@@ -42,7 +88,8 @@ int eth_setenv_enetaddr(char *name, const uchar *enetaddr)
 	char buf[20];
 
 	sprintf(buf, "%pM", enetaddr);
-
+	
+	dprint("set Mac %s\n",buf);
 	return setenv(name, buf);
 }
 
@@ -58,6 +105,7 @@ static inline int eth_setenv_enetaddr_by_index(const char *base_name, int index,
 				 uchar *enetaddr)
 {
 	char enetvar[32];
+	dprint("\n");
 	sprintf(enetvar, index ? "%s%daddr" : "%saddr", base_name, index);
 	return eth_setenv_enetaddr(enetvar, enetaddr);
 }
@@ -228,12 +276,13 @@ struct udevice *eth_get_dev_by_name(const char *devname)
 unsigned char *eth_get_ethaddr(void)
 {
 	struct eth_pdata *pdata;
-
+dprint("\n");
 	if (eth_get_dev()) {
 		pdata = eth_get_dev()->platdata;
+dprint("%s\n",pdata->enetaddr);		
 		return pdata->enetaddr;
 	}
-
+dprint("\n");
 	return NULL;
 }
 
@@ -278,7 +327,7 @@ static int eth_write_hwaddr(struct udevice *dev)
 {
 	struct eth_pdata *pdata = dev->platdata;
 	int ret = 0;
-
+dprint("\n");
 	if (!dev || !device_active(dev))
 		return -EINVAL;
 
@@ -318,6 +367,7 @@ static int on_ethaddr(const char *name, const char *value, enum env_op op,
 	retval = uclass_find_device_by_seq(UCLASS_ETH, index, false, &dev);
 	if (!retval) {
 		struct eth_pdata *pdata = dev->platdata;
+		dprint("\n");
 		switch (op) {
 		case env_op_create:
 		case env_op_overwrite:
@@ -533,7 +583,7 @@ static int eth_post_probe(struct udevice *dev)
 	struct eth_device_priv *priv = dev->uclass_priv;
 	struct eth_pdata *pdata = dev->platdata;
 	unsigned char env_enetaddr[6];
-
+dprint("\n");
 	priv->state = ETH_STATE_INIT;
 
 	/* Check if the device has a MAC address in ROM */

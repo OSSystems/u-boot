@@ -44,7 +44,7 @@ static int genphy_config_advert(struct phy_device *phydev)
 	u32 advertise;
 	int oldadv, adv;
 	int err, changed = 0;
-dprint("\n");
+
 	/* Only allow advertising what
 	 * this PHY supports */
 	phydev->advertising &= phydev->supported;
@@ -122,7 +122,7 @@ static int genphy_setup_forced(struct phy_device *phydev)
 {
 	int err;
 	int ctl = 0;
-dprint("\n");
+
 	phydev->pause = phydev->asym_pause = 0;
 
 	if (SPEED_1000 == phydev->speed)
@@ -174,7 +174,7 @@ dprint("\n");
 int genphy_config_aneg(struct phy_device *phydev)
 {
 	int result;
-dprint("\n");
+
 	if (AUTONEG_ENABLE != phydev->autoneg)
 		return genphy_setup_forced(phydev);
 
@@ -213,32 +213,23 @@ dprint("\n");
  */
 int genphy_update_link(struct phy_device *phydev)
 {
-	unsigned int mii_reg,i;
+	unsigned int mii_reg;
 
 	/*
 	 * Wait if the link is up, and autonegotiation is in progress
 	 * (ie - we're capable and it's not done)
 	 */
 	mii_reg = phy_read(phydev, MDIO_DEVAD_NONE, MII_BMSR);
-        /*
-        for(i=0;i<0x1d;i++){
-            mii_reg = phy_read(phydev, MDIO_DEVAD_NONE, i);        
-            dprint("reg %d = 0x%x\n",i,mii_reg);
-        }*/
-        dprint("BMSR = 0x%x\n",mii_reg); 
 
 	/*
 	 * If we already saw the link up, and it hasn't gone down, then
 	 * we don't need to wait for autoneg again
 	 */
-	if (phydev->link && mii_reg & BMSR_LSTATUS){
-            dprint("\n");
+	if (phydev->link && mii_reg & BMSR_LSTATUS)
 		return 0;
-        }
 
 	if ((mii_reg & BMSR_ANEGCAPABLE) && !(mii_reg & BMSR_ANEGCOMPLETE)) {
 		int i = 0;
-dprint("\n");
 		printf("%s Waiting for PHY auto negotiation to complete",
 			phydev->dev->name);
 		while (!(mii_reg & BMSR_ANEGCOMPLETE)) {
@@ -266,20 +257,16 @@ dprint("\n");
 		printf(" done\n");
 		phydev->link = 1;
 	} else {
-dprint("\n");            
 		/* Read the link a second time to clear the latched state */
 		mii_reg = phy_read(phydev, MDIO_DEVAD_NONE, MII_BMSR);
 
 		if (mii_reg & BMSR_LSTATUS){
-                    dprint("\n");
 			phydev->link = 1;
                 }
 		else{
-                    dprint("\n");
 			phydev->link = 0;
                 }
 	}
-dprint("\n");
 	return 0;
 }
 
@@ -295,7 +282,7 @@ dprint("\n");
 int genphy_parse_link(struct phy_device *phydev)
 {
 	int mii_reg = phy_read(phydev, MDIO_DEVAD_NONE, MII_BMSR);
-dprint("\n");
+
 	/* We're using autonegotiation */
 	if (phydev->supported & SUPPORTED_Autoneg) {
 		u32 lpa = 0;
@@ -343,7 +330,7 @@ dprint("\n");
                         continue;
                     
                     lpa = phy_read(phydev, MDIO_DEVAD_NONE, i);
-                    dprint( "i=%d val = 0x%x\n",i,lpa);
+                   // dprint( "i=%d val = 0x%x\n",i,lpa);
                 }
          
                 
@@ -372,7 +359,6 @@ dprint("\n");
 		if ((mii_reg & BMSR_ESTATEN) && !(mii_reg & BMSR_ERCAP))
 			estatus = phy_read(phydev, MDIO_DEVAD_NONE,
 					   MII_ESTATUS);
-                dprint( "val = 0x%x\n",estatus);                        
 
 		if (estatus & (ESTATUS_1000_XFULL | ESTATUS_1000_XHALF |
 				ESTATUS_1000_TFULL | ESTATUS_1000_THALF)) {
@@ -383,26 +369,21 @@ dprint("\n");
 
 	} else {
 		u32 bmcr = phy_read(phydev, MDIO_DEVAD_NONE, MII_BMCR);
-                dprint( "val = 0x%x\n",bmcr); 
 
 		phydev->speed = SPEED_10;
 		phydev->duplex = DUPLEX_HALF;
 
 		if (bmcr & BMCR_FULLDPLX){
-                    dprint("\n");
 			phydev->duplex = DUPLEX_FULL;
                 }
 
 		if (bmcr & BMCR_SPEED1000){
-                    dprint("\n");                    
 			phydev->speed = SPEED_1000;
                 }
 		else if (bmcr & BMCR_SPEED100){
-                                        dprint("\n");
 			phydev->speed = SPEED_100;
                 }
 	}
-        dprint("\n");    
 	return 0;
 }
 
@@ -410,7 +391,6 @@ int genphy_config(struct phy_device *phydev)
 {
 	int val;
 	u32 features;
-dprint("\n");
 	/* For now, I'll claim that the generic driver supports
 	 * all possible port types */
 	features = (SUPPORTED_TP | SUPPORTED_MII
@@ -461,7 +441,6 @@ dprint("\n");
 
 int genphy_startup(struct phy_device *phydev)
 {
-dprint("\n");    
 	genphy_update_link(phydev);
 	genphy_parse_link(phydev);
 
@@ -537,7 +516,7 @@ int phy_register(struct phy_driver *drv)
 {
 	INIT_LIST_HEAD(&drv->list);
 	list_add_tail(&drv->list, &phy_drivers);
-dprint("\n");
+
 #ifdef CONFIG_NEEDS_MANUAL_RELOC
 	if (drv->probe)
 		drv->probe += gd->reloc_off;
@@ -584,7 +563,7 @@ static struct phy_driver *get_phy_driver(struct phy_device *phydev,
 	struct list_head *entry;
 	int phy_id = phydev->phy_id;
 	struct phy_driver *drv = NULL;
-dprint("\n");
+
 	list_for_each(entry, &phy_drivers) {
 		drv = list_entry(entry, struct phy_driver, list);
 		if ((drv->uid & drv->mask) == (phy_id & drv->mask))
@@ -600,7 +579,7 @@ static struct phy_device *phy_device_create(struct mii_dev *bus, int addr,
 					    phy_interface_t interface)
 {
 	struct phy_device *dev;
-dprint("\n");
+
 	/* We allocate the device, and initialize the
 	 * default values */
 	dev = malloc(sizeof(*dev));
@@ -660,16 +639,13 @@ int __weak get_phy_id(struct mii_dev *bus, int addr, int devad, u32 *phy_id)
 		return -EIO;
 
 	*phy_id |= (phy_reg & 0xffff);
-        
-dprint("phyid = 0x%X\n",phy_id);
-    
+           
 	return 0;
 }
 
 static struct phy_device *create_phy_by_mask(struct mii_dev *bus,
 		unsigned phy_mask, int devad, phy_interface_t interface)
 {
-dprint("\n");    
 	u32 phy_id = 0xffffffff;
 	while (phy_mask) {
 		int addr = ffs(phy_mask) - 1;
@@ -685,7 +661,6 @@ dprint("\n");
 static struct phy_device *search_for_existing_phy(struct mii_dev *bus,
 		unsigned phy_mask, phy_interface_t interface)
 {
-dprint("\n");    
 	/* If we have one, return the existing device, with new interface */
 	while (phy_mask) {
 		int addr = ffs(phy_mask) - 1;
@@ -703,7 +678,7 @@ static struct phy_device *get_phy_device_by_mask(struct mii_dev *bus,
 {
 	int i;
 	struct phy_device *phydev;
-dprint("\n");
+
 	phydev = search_for_existing_phy(bus, phy_mask, interface);
 	if (phydev)
 		return phydev;
@@ -721,6 +696,118 @@ dprint("\n");
 	return phy_device_create(bus, ffs(phy_mask) - 1, 0xffffffff, interface);
 }
 
+//=============collin add for access EEPROM====================
+#define	bERRE			(0x1)
+#define bERPRW			(0x2)
+#define bERPRR			(0x4)
+#define bWEP			(0x10)
+#define MAC_NUMBER		 6
+struct 	phy_device *my_phydev = NULL;
+bool 	EEPROM_READY = false;
+u16 	mac_address[MAC_NUMBER];
+                                                                                                                                                                                                                                                                                                                                                                                                                                                         
+u16 get_reg(struct phy_device *phydev,u16 abs_adr)
+{
+	int devad = MDIO_DEVAD_NONE;	
+	
+	u8 A, R;
+	A= (u8)(abs_adr >> 5);
+	R= (u8)(abs_adr & 0x1f);
+	
+	phydev->addr= A;
+	return (u16) phy_read(phydev, devad, R);
+}
+                                                                                                                                                                                                                                                                                                                                                                                                         
+bool DevicePolling(struct phy_device *phydev,u32 uMask, u32 uExpected)
+{
+	u32	uInterval= 1;	
+	u32	uRetries= ((u32)-1);
+	
+	for(;uRetries;uRetries--){
+		if((get_reg(phydev,0x31A) & uMask) == uExpected) break;
+		mdelay(uInterval); 
+	} 
+	return (bool)uRetries;
+}
+
+void set_reg(struct phy_device *phydev, u16 abs_adr, u16 value)
+{
+	int devad = MDIO_DEVAD_NONE;
+	
+	u8 A, R;
+	A= (u8)(abs_adr >> 5); //0x18
+	R= (u8)(abs_adr & 0x1f);  //0x1A
+	
+	phydev->addr= A;
+  	phy_write(phydev, devad, R, value);
+
+}  
+                                                                                                                                                                                                                                                                                                                                                                                                                   
+void DM8603EEPROMWrite(struct phy_device *phydev,u8 address, u16 value)
+{
+	u16 dat=0;
+	dat= address << 8;
+	set_reg(phydev,0x31A, dat);
+	
+	// set written data
+	set_reg(phydev,0x31B, value);
+	set_reg(phydev,0x31A, dat | bWEP | bERPRW );
+	
+	DevicePolling(phydev,bERRE, 0x00);
+	
+	set_reg(phydev,0x31A, 0); // stop command
+}
+
+void EEPROM_MAC_write(u8* MAC)
+{
+	u16 buf[MAC_NUMBER];
+	int i;
+	
+	if(my_phydev == NULL ) return;
+	
+	for(i=0;i<MAC_NUMBER;i++)
+	{
+		buf[i] = *(MAC+i);	
+		DM8603EEPROMWrite(my_phydev,i,buf[i]);		
+		dprint("mac write %d = 0x%x\n",i,buf[i]);
+	}	
+}
+
+
+u16 DM8603EEPROMRead(struct phy_device *phydev,u8 address)
+{
+	u16 dat=0;
+	
+	dat= address << 8;
+	set_reg(phydev,0x31A, dat | bERPRR );
+	
+  	DevicePolling(phydev,bERRE, 0x00);
+  
+  	set_reg(phydev,0x31A, 0); // stop command
+  	
+  	// retrive data
+	return get_reg(phydev,0x31B);
+}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
+void Dm8603EepromRead(struct phy_device *phydev)
+{
+	
+	int i,j=0;
+	u16 data;
+	my_phydev = phydev;
+			
+	for(i=0;i<MAC_NUMBER;i++)
+	{
+		data = DM8603EEPROMRead(my_phydev,i);
+		mac_address[i] = data;
+		dprint("read from eeprom %d=0x%x\n",i,mac_address[i]);			
+	}	
+	
+	EEPROM_READY = true;
+
+}
+//=============================================================
+
 /**
  * get_phy_device - reads the specified PHY device and returns its @phy_device struct
  * @bus: the target MII bus
@@ -732,7 +819,6 @@ dprint("\n");
 static struct phy_device *get_phy_device(struct mii_dev *bus, int addr,
 					 phy_interface_t interface)
 {
-dprint("\n");    
 	return get_phy_device_by_mask(bus, 1 << addr, interface);
 }
 
@@ -743,7 +829,7 @@ int phy_reset(struct phy_device *phydev)
 	int reg,addr;
 	int timeout = 500;
 	int devad = MDIO_DEVAD_NONE;
-dprint("\n");
+
 #ifdef CONFIG_PHYLIB_10G
 	/* If it's 10G, we need to issue reset through one of the MMDs */
 	if (is_10g_interface(phydev->interface)) {
@@ -817,7 +903,10 @@ dprint("\n");
 	
 	dprint("DM8603 in P2 fource mode \n");
 
+	Dm8603EepromRead(phydev);
+	
 	phydev->addr = addr;
+		
 #endif	
         
 	return 0;

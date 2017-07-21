@@ -214,6 +214,8 @@ static int _do_env_set(int flag, int argc, char * const argv[], int env_flag)
 	char  *name, *value, *s;
 	ENTRY e, *ep;
 
+	//printf("collin add the name=%s,value= %s\n",argv[1],argv[2]);
+	
 	debug("Initial value for argc=%d\n", argc);
 	while (argc > 1 && **(argv + 1) == '-') {
 		char *arg = *++argv;
@@ -270,6 +272,7 @@ static int _do_env_set(int flag, int argc, char * const argv[], int env_flag)
 
 	e.key	= name;
 	e.data	= value;
+		
 	hsearch_r(e, ENTER, &ep, &env_htab, env_flag);
 	free(value);
 	if (!ep) {

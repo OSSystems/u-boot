@@ -58,7 +58,7 @@ DECLARE_GLOBAL_DATA_PTR;
 			PAD_CTL_SRE_FAST)
 
 #define ETH_PHY_RESET	IMX_GPIO_NR(4, 21)
-
+#define BUZZER_CTRL	IMX_GPIO_NR(1, 7)
 int dram_init(void)
 {
 	gd->ram_size = get_ram_size((void *)PHYS_SDRAM, PHYS_SDRAM_SIZE);
@@ -69,6 +69,9 @@ int dram_init(void)
 static iomux_v3_cfg_t const uart1_pads[] = {
 	MX6_PAD_UART1_TXD__UART1_TXD | MUX_PAD_CTRL(UART_PAD_CTRL),
 	MX6_PAD_UART1_RXD__UART1_RXD | MUX_PAD_CTRL(UART_PAD_CTRL),
+	
+	//Buzzer I/O
+	MX6SL_PAD_EPDC_D0__GPIO1_IO07 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
 static iomux_v3_cfg_t const usdhc1_pads[] = {
@@ -148,6 +151,9 @@ static void setup_spi(void)
 static void setup_iomux_uart(void)
 {
 	imx_iomux_v3_setup_multiple_pads(uart1_pads, ARRAY_SIZE(uart1_pads));
+        
+	gpio_direction_output(BUZZER_CTRL , 0);   // Buzzer gpio  
+	//gpio_direction_output(BUZZER_CTRL , 1);   // Buzzer gpio          
 }
 
 static void setup_iomux_fec(void)
@@ -178,6 +184,7 @@ int board_mmc_getcd(struct mmc *mmc)
 	switch (cfg->esdhc_base) {
 	case USDHC1_BASE_ADDR:
 		ret = !gpio_get_value(USDHC1_CD_GPIO);
+                ret = 0x41;
 		break;
 	case USDHC2_BASE_ADDR:
 		ret = !gpio_get_value(USDHC2_CD_GPIO);
@@ -371,6 +378,7 @@ int board_ehci_hcd_init(int port)
 int board_early_init_f(void)
 {
 	setup_iomux_uart();
+        
 #ifdef CONFIG_MXC_SPI
 	setup_spi();
 #endif

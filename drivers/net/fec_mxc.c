@@ -89,6 +89,7 @@ static int fec_mdio_read(struct ethernet_regs *eth, uint8_t phyAddr,
 	uint32_t phy;		/* convenient holder for the PHY */
 	uint32_t start;
 	int val;
+        
 
 	/*
 	 * reading from any PHY's register is done by properly
@@ -121,6 +122,9 @@ static int fec_mdio_read(struct ethernet_regs *eth, uint8_t phyAddr,
 	 * it's now safe to read the PHY's register
 	 */
 	val = (unsigned short)readl(&eth->mii_data);
+        
+        //printf("phyaddr=%x ,regaddr=%x,val=%x\n",phyAddr,regAddr,val);
+                
 	debug("%s: phy: %02x reg:%02x val:%#x\n", __func__, phyAddr,
 			regAddr, val);
 	return val;

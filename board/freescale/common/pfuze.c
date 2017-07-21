@@ -47,6 +47,7 @@ int pfuze_mode_init(struct pmic *p, u32 mode)
 	return ret;
 }
 
+//collin_add modify pmic voltage
 struct pmic *pfuze_common_init(unsigned char i2cbus)
 {
 	struct pmic *p;
@@ -63,7 +64,11 @@ struct pmic *pfuze_common_init(unsigned char i2cbus)
 		return NULL;
 
 	pmic_reg_read(p, PFUZE100_DEVICEID, &reg);
-	printf("PMIC:  PFUZE100 ID=0x%02x\n", reg);
+        
+        if(reg == 0x10)
+            printf("PMIC:  PFUZE100 ID=0x%02x\n", reg);
+        else
+            printf("PMIC:  PFUZE3001 ID=0x%02x\n", reg);            
 
 	/* Set SW1AB stanby volage to 0.975V */
 	pmic_reg_read(p, PFUZE100_SW1ABSTBY, &reg);
