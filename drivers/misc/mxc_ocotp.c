@@ -59,7 +59,7 @@
 
 #if defined(CONFIG_MX6) || defined(CONFIG_VF610)
 #define FUSE_BANK_SIZE	0x80
-#ifdef CONFIG_MX6SL
+#if (defined CONFIG_MX6SL)||(defined CONFIG_MX6SL_512M) ||(defined CONFIG_MX6SL_1G) ||(defined CONFIG_MX6SL_2G)
 #define FUSE_BANKS	8
 #else
 #define FUSE_BANKS	16

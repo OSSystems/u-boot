@@ -290,7 +290,8 @@ static void init_bandgap(void)
 }
 
 
-#ifdef CONFIG_MX6SL
+#if (defined CONFIG_MX6SL)||(defined CONFIG_MX6SL_512M) ||(defined CONFIG_MX6SL_1G) ||(defined CONFIG_MX6SL_2G)
+
 static void set_preclk_from_osc(void)
 {
 	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
@@ -325,7 +326,7 @@ int arch_cpu_init(void)
 		set_ahb_rate(132000000);
 
 		/* Set perclk to source from OSC 24MHz */
-#if defined(CONFIG_MX6SL)
+#if (defined CONFIG_MX6SL)||(defined CONFIG_MX6SL_512M) ||(defined CONFIG_MX6SL_1G) ||(defined CONFIG_MX6SL_2G)
 	set_preclk_from_osc();
 #endif
 

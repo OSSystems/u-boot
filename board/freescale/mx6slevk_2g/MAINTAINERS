@@ -1,0 +1,9 @@
+MX6SLEVK BOARD
+M:	Fabio Estevam <fabio.estevam@freescale.com>
+M:	Peng Fan <Peng.Fan@freescale.com>
+S:	Maintained
+F:	board/freescale/mx6slevk_2g/
+F:	include/configs/mx6slevk_2g.h
+F:	configs/mx6slevk_2g_defconfig
+F:	configs/mx6slevk_2g_spl_defconfig
+F:	configs/mx6slevk_2g_spinor_defconfig

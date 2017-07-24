@@ -116,7 +116,8 @@ void mx6ul_dram_iocfg(unsigned width,
 }
 #endif
 
-#if defined(CONFIG_MX6SL)
+#if (defined CONFIG_MX6SL)||(defined CONFIG_MX6SL_512M) ||(defined CONFIG_MX6SL_1G) ||(defined CONFIG_MX6SL_2G)
+
 void mx6sl_dram_iocfg(unsigned width,
 		      const struct mx6sl_iomux_ddr_regs *ddr,
 		      const struct mx6sl_iomux_grp_regs *grp)

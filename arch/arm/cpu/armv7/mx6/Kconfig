@@ -85,6 +85,18 @@ config TARGET_MX6SLEVK
 	bool "mx6slevk"
 	select SUPPORT_SPL
 
+config TARGET_MX6SLEVK_512M
+	bool "mx6slevk_512m"
+	select SUPPORT_SPL
+
+config TARGET_MX6SLEVK_1G
+	bool "mx6slevk_1g"
+	select SUPPORT_SPL
+	
+config TARGET_MX6SLEVK_2G
+	bool "mx6slevk_2g"
+	select SUPPORT_SPL
+	
 config TARGET_MX6SXSABRESD
 	bool "mx6sxsabresd"
 	select SUPPORT_SPL
@@ -160,6 +172,9 @@ source "board/freescale/mx6qarm2/Kconfig"
 source "board/freescale/mx6qsabreauto/Kconfig"
 source "board/freescale/mx6sabresd/Kconfig"
 source "board/freescale/mx6slevk/Kconfig"
+source "board/freescale/mx6slevk_512m/Kconfig"
+source "board/freescale/mx6slevk_1g/Kconfig"
+source "board/freescale/mx6slevk_2g/Kconfig"
 source "board/freescale/mx6sxsabresd/Kconfig"
 source "board/freescale/mx6ul_14x14_evk/Kconfig"
 source "board/gateworks/gw_ventana/Kconfig"

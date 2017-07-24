@@ -792,7 +792,7 @@ u16 DM8603EEPROMRead(struct phy_device *phydev,u8 address)
 void Dm8603EepromRead(struct phy_device *phydev)
 {
 	
-	int i,j=0;
+	int i;
 	u16 data;
 	my_phydev = phydev;
 			

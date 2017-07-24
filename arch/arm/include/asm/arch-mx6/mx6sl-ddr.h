@@ -7,7 +7,7 @@
 #ifndef __ASM_ARCH_MX6SL_DDR_H__
 #define __ASM_ARCH_MX6SL_DDR_H__
 
-#ifndef CONFIG_MX6SL
+#if !(defined CONFIG_MX6SL)|| !(defined CONFIG_MX6SL_512M) || !(defined CONFIG_MX6SL_1G) || !(defined CONFIG_MX6SL_2G)
 #error "wrong CPU"
 #endif
 

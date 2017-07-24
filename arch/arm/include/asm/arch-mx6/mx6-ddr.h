@@ -19,7 +19,7 @@
 #ifdef CONFIG_MX6UL
 #include "mx6ul-ddr.h"
 #else
-#ifdef CONFIG_MX6SL
+#if (defined CONFIG_MX6SL)||(defined CONFIG_MX6SL_512M) ||(defined CONFIG_MX6SL_1G) ||(defined CONFIG_MX6SL_2G)
 #include "mx6sl-ddr.h"
 #else
 #error "Please select cpu"
