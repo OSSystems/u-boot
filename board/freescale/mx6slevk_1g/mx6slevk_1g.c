@@ -165,7 +165,7 @@ static void setup_iomux_fec(void)
 	udelay(1000);
 	gpio_set_value(ETH_PHY_RESET, 1);
 }
-
+#define LCD_PWR_GPIO	IMX_GPIO_NR(1, 0)
 #define USDHC1_CD_GPIO	IMX_GPIO_NR(4, 7)
 #define USDHC2_CD_GPIO	IMX_GPIO_NR(5, 0)
 #define USDHC3_CD_GPIO	IMX_GPIO_NR(3, 22)
@@ -180,7 +180,10 @@ int board_mmc_getcd(struct mmc *mmc)
 {
 	struct fsl_esdhc_cfg *cfg = (struct fsl_esdhc_cfg *)mmc->priv;
 	int ret = 0;
-
+        
+        //enable LCD Display
+	gpio_direction_output(LCD_PWR_GPIO , 1);        
+            
 	switch (cfg->esdhc_base) {
 	case USDHC1_BASE_ADDR:
 		ret = !gpio_get_value(USDHC1_CD_GPIO);
