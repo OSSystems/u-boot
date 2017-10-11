@@ -6,6 +6,14 @@
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
+#if 0
+    #define CONFIG_MMC_TRACE
+    #define dprint(fmt,s...) printf("%s,%d:"fmt,__FUNCTION__,__LINE__,##s)
+#else
+    #define dprint(fmt,s...)
+#endif
+
+
 
 #include <config.h>
 #include <common.h>
@@ -20,6 +28,7 @@
 #include <linux/list.h>
 #include <div64.h>
 #include "mmc_private.h"
+#define MAX_FREQ 50000000
 
 static struct list_head mmc_devices;
 static int cur_dev_num = -1;
@@ -307,9 +316,11 @@ static int sd_send_op_cond(struct mmc *mmc)
 
 		err = mmc_send_cmd(mmc, &cmd, NULL);
 
-		if (err)
+		if (err){
+                    dprint("\n");
 			return err;
-
+                }
+dprint("\n");
 		cmd.cmdidx = SD_CMD_APP_SEND_OP_COND;
 		cmd.resp_type = MMC_RSP_R3;
 
@@ -465,7 +476,7 @@ static int mmc_send_ext_csd(struct mmc *mmc, u8 *ext_csd)
 	data.flags = MMC_DATA_READ;
 
 	err = mmc_send_cmd(mmc, &cmd, &data);
-
+        dprint("version=%d,err=%d\n",*ext_csd,err);
 	return err;
 }
 
@@ -1006,6 +1017,8 @@ void mmc_set_clock(struct mmc *mmc, uint clock)
 		clock = mmc->cfg->f_min;
 
 	mmc->clock = clock;
+        
+        dprint("mmc clock is %d\n",clock);
 
 	mmc_set_ios(mmc);
 }
@@ -1360,7 +1373,7 @@ static int mmc_startup(struct mmc *mmc)
 		}
 
 		if (mmc->card_caps & MMC_MODE_HS)
-			mmc->tran_speed = 50000000;
+			mmc->tran_speed = MAX_FREQ;
 		else
 			mmc->tran_speed = 25000000;
 	} else if (mmc->version >= MMC_VERSION_4) {
@@ -1495,7 +1508,6 @@ static int mmc_send_if_cond(struct mmc *mmc)
 {
 	struct mmc_cmd cmd;
 	int err;
-
 	cmd.cmdidx = SD_CMD_SEND_IF_COND;
 	/* We set the bit if the host supports voltages between 2.7 and 3.6 V */
 	cmd.cmdarg = ((mmc->cfg->voltages & 0xff8000) != 0) << 8 | 0xaa;
@@ -1503,13 +1515,22 @@ static int mmc_send_if_cond(struct mmc *mmc)
 
 	err = mmc_send_cmd(mmc, &cmd, NULL);
 
-	if (err)
-		return err;
+	if (err){
+            dprint("\n");
+            return err;
+        }            
 
 	if ((cmd.response[0] & 0xff) != 0xaa)
+        {
+            dprint("\n");
 		return UNUSABLE_ERR;
+        }
+    
 	else
+        {
+            dprint("\n");
 		mmc->version = SD_VERSION_2;
+        }
 
 	return 0;
 }
@@ -1624,7 +1645,7 @@ int mmc_start_init(struct mmc *mmc)
 	/* The internal partition reset to user partition(0) at every CMD0*/
 	mmc->part_num = 0;
 
-	/* Test for SD version 2 */
+	/* Test for SD version 2 */        
 	err = mmc_send_if_cond(mmc);
 
 	/* Now try to get the SD card's operating condition */

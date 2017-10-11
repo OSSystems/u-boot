@@ -69,7 +69,10 @@ int eth_getenv_enetaddr(char *name, uchar *enetaddr)
  		for(i=0;i<MAC_NUMBER;i++)	buf[i] = eeprom_mac[i];
 		printf("\nethaddr mac != eeprom mac, write to ethaddr\n");
 		eth_setenv_enetaddr(name,(uchar*)buf);
+                
+#ifndef CONFIG_ENV_IS_NOWHERE                 
 		saveenv();
+#endif                
 		eth_parse_enetaddr(getenv(name), enetaddr);		
 		return false;
 	}

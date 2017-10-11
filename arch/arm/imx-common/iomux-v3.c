@@ -8,6 +8,8 @@
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
+#define dprint(fmt,s...) printf("collin:%s,%d:"fmt,__func__,__LINE__,##s)
+
 #include <common.h>
 #include <asm/io.h>
 #include <asm/arch/imx-regs.h>
@@ -30,6 +32,7 @@ void imx_iomux_v3_setup_pad(iomux_v3_cfg_t pad)
 	u32 pad_ctrl_ofs =
 		(pad & MUX_PAD_CTRL_OFS_MASK) >> MUX_PAD_CTRL_OFS_SHIFT;
 	u32 pad_ctrl = (pad & MUX_PAD_CTRL_MASK) >> MUX_PAD_CTRL_SHIFT;
+        u32 reg;
 
 #if (defined CONFIG_MX6SL)||(defined CONFIG_MX6SL_512M) ||(defined CONFIG_MX6SL_1G) ||(defined CONFIG_MX6SL_2G)
 
@@ -66,10 +69,17 @@ void imx_iomux_v3_setup_pad(iomux_v3_cfg_t pad)
 	if (!(pad_ctrl & NO_PAD_CTRL) && pad_ctrl_ofs)
 		__raw_writel(pad_ctrl, base + pad_ctrl_ofs);
 #endif
-        //collin_add for 3.3v adjustment
-        __raw_writel(0x20007809, 0x21900c0);
-        
 
+#define SD1_VSELECT_ADDR     0x21900C0
+#define SD2_VSELECT_ADDR     0x21940C0
+        
+        //collin_add for 3.3v adjustment for SD1,this output used to control PMIC output 
+        __raw_writel(0x20007809, SD1_VSELECT_ADDR);
+        
+        //collin_add for 1.8v adjustment for SD2       
+        reg = readl(SD2_VSELECT_ADDR); 
+        __raw_writel((reg|0x02),SD2_VSELECT_ADDR );        
+        
 #ifdef CONFIG_IOMUX_LPSR
 	if (lpsr == IOMUX_CONFIG_LPSR)
 		base = (void *)IOMUXC_BASE_ADDR;

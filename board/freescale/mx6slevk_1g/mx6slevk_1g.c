@@ -131,6 +131,8 @@ static iomux_v3_cfg_t const fec_pads[] = {
 
 #ifdef CONFIG_MXC_SPI
 static iomux_v3_cfg_t ecspi1_pads[] = {
+    
+        
 	MX6_PAD_ECSPI1_MISO__ECSPI_MISO | MUX_PAD_CTRL(SPI_PAD_CTRL),
 	MX6_PAD_ECSPI1_MOSI__ECSPI_MOSI | MUX_PAD_CTRL(SPI_PAD_CTRL),
 	MX6_PAD_ECSPI1_SCLK__ECSPI_SCLK | MUX_PAD_CTRL(SPI_PAD_CTRL),
@@ -152,8 +154,7 @@ static void setup_iomux_uart(void)
 {
 	imx_iomux_v3_setup_multiple_pads(uart1_pads, ARRAY_SIZE(uart1_pads));
         
-	gpio_direction_output(BUZZER_CTRL , 0);   // Buzzer gpio  
-	//gpio_direction_output(BUZZER_CTRL , 1);   // Buzzer gpio          
+	gpio_direction_output(BUZZER_CTRL , 0);   // Buzzer gpio 
 }
 
 static void setup_iomux_fec(void)
@@ -191,6 +192,7 @@ int board_mmc_getcd(struct mmc *mmc)
 		break;
 	case USDHC2_BASE_ADDR:
 		ret = !gpio_get_value(USDHC2_CD_GPIO);
+                ret = 0x41;
 		break;
 	case USDHC3_BASE_ADDR:
 		ret = !gpio_get_value(USDHC3_CD_GPIO);

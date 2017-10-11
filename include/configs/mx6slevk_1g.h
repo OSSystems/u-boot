@@ -29,7 +29,7 @@
 #define CONFIG_MXC_UART_BASE		UART1_IPS_BASE_ADDR
 
 /* MMC Configs */
-#define CONFIG_SYS_FSL_ESDHC_ADDR	USDHC1_BASE_ADDR
+#define CONFIG_SYS_FSL_ESDHC_ADDR	USDHC2_BASE_ADDR
 
 /* I2C Configs */
 #define CONFIG_CMD_I2C
@@ -59,7 +59,23 @@
 #define CONFIG_PHYLIB
 #define CONFIG_PHY_SMSC
 
+#define CONFIG_MFG_ENV_SETTINGS \
+	"mfgtool_args=setenv bootargs console=${console},${baudrate} " \
+	"rdinit=/linuxrc " \
+	"g_mass_storage.stall=0 g_mass_storage.removable=1 " \
+		"g_mass_storage.idVendor=0x066F g_mass_storage.idProduct=0x37FF "\
+		"g_mass_storage.iSerialNumber=\"\" "\
+		"clk_ignore_unused "\
+		"\0" \
+	"initrd_addr=0x83800000\0" \
+	"initrd_high=0xffffffff\0" \
+	"loadaddr=0x80800000\0" \
+	"bootcmd=run mfgtool_args;bootz ${loadaddr} ${initrd_addr} ${fdt_addr};\0" \
+
+
 #define CONFIG_EXTRA_ENV_SETTINGS \
+        CONFIG_MFG_ENV_SETTINGS \
+	"bootdelay=1\0" \
 	"script=boot.scr\0" \
 	"image=zImage\0" \
 	"console=ttymxc0\0" \
@@ -165,8 +181,13 @@
 #define CONFIG_ENV_SPI_MODE             CONFIG_SF_DEFAULT_MODE
 #define CONFIG_ENV_SPI_MAX_HZ           CONFIG_SF_DEFAULT_SPEED
 #else
-#define CONFIG_ENV_OFFSET		(8 * SZ_64K)
-#define CONFIG_ENV_IS_IN_MMC
+/* The define of CONFIG_ENV_IS_NOWHERE is for MFG tool only */
+    #if 1
+        #define CONFIG_ENV_OFFSET		(8 * SZ_64K)
+        #define CONFIG_ENV_IS_IN_MMC
+    #else
+        #define CONFIG_ENV_IS_NOWHERE
+    #endif
 #endif
 
 #define CONFIG_CMD_SF
@@ -193,9 +214,9 @@
 #define CONFIG_USB_MAX_CONTROLLER_COUNT	2
 #endif
 
-#define CONFIG_SYS_FSL_USDHC_NUM	1  //collin_add from 3 to 1
+#define CONFIG_SYS_FSL_USDHC_NUM	3  //collin_add from 3 to 1
 #if defined(CONFIG_ENV_IS_IN_MMC)
-#define CONFIG_SYS_MMC_ENV_DEV		0	/* SDHC1*/
+#define CONFIG_SYS_MMC_ENV_DEV		1	/* SDHC2*/
 #endif
 
 #define CONFIG_IMX_THERMAL
