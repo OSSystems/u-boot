@@ -1,0 +1,1 @@
+cmd_arch/arm/cpu/armv7/mx6/built-in.o :=  /home/ennis/project/imx6slevk/fsl-linaro-toolchain-master/bin/arm-fsl-linux-gnueabi-ld.bfd     -r -o arch/arm/cpu/armv7/mx6/built-in.o arch/arm/cpu/armv7/mx6/soc.o arch/arm/cpu/armv7/mx6/clock.o arch/arm/cpu/armv7/mx6/mp.o 
