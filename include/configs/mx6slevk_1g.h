@@ -29,7 +29,7 @@
 #define CONFIG_MXC_UART_BASE		UART1_IPS_BASE_ADDR
 
 /* MMC Configs */
-#define CONFIG_SYS_FSL_ESDHC_ADDR	USDHC2_BASE_ADDR
+#define CONFIG_SYS_FSL_ESDHC_ADDR	USDHC1_BASE_ADDR
 
 /* I2C Configs */
 #define CONFIG_CMD_I2C
@@ -216,7 +216,7 @@
 
 #define CONFIG_SYS_FSL_USDHC_NUM	3  //collin_add from 3 to 1
 #if defined(CONFIG_ENV_IS_IN_MMC)
-#define CONFIG_SYS_MMC_ENV_DEV		1	/* SDHC2*/
+#define CONFIG_SYS_MMC_ENV_DEV		0	/* SDHC2*/
 #endif
 
 #define CONFIG_IMX_THERMAL
