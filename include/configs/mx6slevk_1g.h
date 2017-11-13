@@ -6,6 +6,14 @@
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
+/* if the EMMC is be used, the USE_EMMC should be #define
+ * if the SD-Card is be used, please not define USE_EMMC
+ * the mmcdev=0 means boot from sd-card, mmcdev=1 means boot from emmc.
+ * if not using variables that already saved in reserve area, pls #define USE_DEFAULT_PARM
+ * if want uboot for mfgtool the define CONFIG_MFG_ENV_SETTINGS should be include in
+ * CONFIG_EXTRA_ENV_SETTINGS
+ * */
+
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
@@ -29,8 +37,14 @@
 #define CONFIG_MXC_UART_BASE		UART1_IPS_BASE_ADDR
 
 /* MMC Configs */
-#define CONFIG_SYS_FSL_ESDHC_ADDR	USDHC1_BASE_ADDR
+#define USE_EMMC
+/* do't forget mmcdev shoube be change to 1 */
 
+#ifdef USE_EMMC
+    #define CONFIG_SYS_FSL_ESDHC_ADDR	USDHC2_BASE_ADDR
+#else
+    #define CONFIG_SYS_FSL_ESDHC_ADDR	USDHC1_BASE_ADDR
+#endif    
 /* I2C Configs */
 #define CONFIG_CMD_I2C
 #define CONFIG_SYS_I2C
@@ -69,23 +83,22 @@
 		"\0" \
 	"initrd_addr=0x83800000\0" \
 	"initrd_high=0xffffffff\0" \
-	"loadaddr=0x80800000\0" \
+	"loadaddr=0x82000000\0" \
 	"bootcmd=run mfgtool_args;bootz ${loadaddr} ${initrd_addr} ${fdt_addr};\0" \
 
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
-        CONFIG_MFG_ENV_SETTINGS \
+        "baudrate=115200\0" \
 	"bootdelay=1\0" \
 	"script=boot.scr\0" \
 	"image=zImage\0" \
 	"console=ttymxc0\0" \
 	"fdt_high=0xffffffff\0" \
-	"initrd_high=0xffffffff\0" \
 	"fdt_file=imx6sl-evk.dtb\0" \
 	"fdt_addr=0x88000000\0" \
 	"boot_fdt=try\0" \
 	"ip_dyn=yes\0" \
-	"mmcdev=0\0" \
+	"mmcdev=1\0" \
 	"mmcpart=1\0" \
 	"mmcroot=/dev/mmcblk0p2 rootwait rw\0" \
 	"mmcargs=setenv bootargs console=${console},${baudrate} " \
@@ -180,14 +193,16 @@
 #define CONFIG_ENV_SPI_CS               CONFIG_SF_DEFAULT_CS
 #define CONFIG_ENV_SPI_MODE             CONFIG_SF_DEFAULT_MODE
 #define CONFIG_ENV_SPI_MAX_HZ           CONFIG_SF_DEFAULT_SPEED
+
 #else
 /* The define of CONFIG_ENV_IS_NOWHERE is for MFG tool only */
-    #if 1
-        #define CONFIG_ENV_OFFSET		(8 * SZ_64K)
-        #define CONFIG_ENV_IS_IN_MMC
-    #else
-        #define CONFIG_ENV_IS_NOWHERE
-    #endif
+#ifdef USE_DEFAULT_PARM
+#define CONFIG_ENV_IS_NOWHERE   
+#else
+#define CONFIG_ENV_OFFSET		(8 * SZ_64K)
+#define CONFIG_ENV_IS_IN_MMC        
+#endif
+
 #endif
 
 #define CONFIG_CMD_SF
@@ -214,9 +229,14 @@
 #define CONFIG_USB_MAX_CONTROLLER_COUNT	2
 #endif
 
-#define CONFIG_SYS_FSL_USDHC_NUM	3  //collin_add from 3 to 1
+#define CONFIG_SYS_FSL_USDHC_NUM	2  //collin_add from 3 to 1
 #if defined(CONFIG_ENV_IS_IN_MMC)
-#define CONFIG_SYS_MMC_ENV_DEV		0	/* SDHC2*/
+
+#ifdef USE_EMMC
+    #define CONFIG_SYS_MMC_ENV_DEV		1
+#else
+    #define CONFIG_SYS_MMC_ENV_DEV		0
+#endif
 #endif
 
 #define CONFIG_IMX_THERMAL
