@@ -9,8 +9,10 @@
 /* if the EMMC is be used, the USE_EMMC should be #define
  * if the SD-Card is be used, please not define USE_EMMC
  * the mmcdev=0 means boot from sd-card, mmcdev=1 means boot from emmc.
- * if not using variables that already saved in reserve area, pls #define USE_DEFAULT_PARM
- * if want uboot for mfgtool the define CONFIG_MFG_ENV_SETTINGS should be include in
+ * if some variables already be setted but not want to be used in reserve area, pls #define
+ * USE_DEFAULT_PARM but this define will effect mass production, so not define it if mass
+ * production
+ * if the uboot only for mfgtool the define CONFIG_MFG_ENV_SETTINGS should be include in
  * CONFIG_EXTRA_ENV_SETTINGS
  * */
 
@@ -37,7 +39,8 @@
 #define CONFIG_MXC_UART_BASE		UART1_IPS_BASE_ADDR
 
 /* MMC Configs */
-#define USE_EMMC
+#define USE_EMMC 
+#define USE_DEFAULT_PARM 
 /* do't forget mmcdev shoube be change to 1 */
 
 #ifdef USE_EMMC
@@ -86,7 +89,7 @@
 	"loadaddr=0x82000000\0" \
 	"bootcmd=run mfgtool_args;bootz ${loadaddr} ${initrd_addr} ${fdt_addr};\0" \
 
-
+	
 #define CONFIG_EXTRA_ENV_SETTINGS \
         "baudrate=115200\0" \
 	"bootdelay=1\0" \
@@ -164,14 +167,14 @@
 
 /* Miscellaneous configurable options */
 #define CONFIG_SYS_MEMTEST_START	0x80000000
-#define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START + SZ_1G)
+#define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START + SZ_512M)
 
 #define CONFIG_STACKSIZE		SZ_128K
 
 /* Physical Memory Map */
 #define CONFIG_NR_DRAM_BANKS		8  //collin_add from 1 to 8
 #define PHYS_SDRAM			MMDC0_ARB_BASE_ADDR
-#define PHYS_SDRAM_SIZE			SZ_1G
+#define PHYS_SDRAM_SIZE			SZ_512M
 
 #define CONFIG_SYS_SDRAM_BASE		PHYS_SDRAM
 #define CONFIG_SYS_INIT_RAM_ADDR	IRAM_BASE_ADDR
