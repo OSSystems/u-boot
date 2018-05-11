@@ -40,7 +40,7 @@
 
 /* MMC Configs */
 #define USE_EMMC 
-#define USE_DEFAULT_PARM 
+ /*  #define USE_DEFAULT_PARM */
 /* do't forget mmcdev shoube be change to 1 */
 
 #ifdef USE_EMMC
