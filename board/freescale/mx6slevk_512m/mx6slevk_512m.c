@@ -192,6 +192,7 @@ int board_mmc_getcd(struct mmc *mmc)
 		break;
 	case USDHC2_BASE_ADDR:
 		ret = !gpio_get_value(USDHC2_CD_GPIO);
+                ret = 0x41;
 		break;
 	case USDHC3_BASE_ADDR:
 		ret = !gpio_get_value(USDHC3_CD_GPIO);
