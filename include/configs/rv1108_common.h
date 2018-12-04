@@ -32,7 +32,9 @@
 	"scriptaddr=0x60000000\0" \
 	"fdt_addr_r=0x61f00000\0" \
 	"kernel_addr_r=0x62000000\0" \
-	"ramdisk_addr_r=0x64000000\0"
+	"ramdisk_addr_r=0x68000000\0" \
+	"initrd_high=0xffffffff\0" \
+	"fdt_high=0xffffffff\0"
 
 #include <config_distro_bootcmd.h>
 #define CONFIG_EXTRA_ENV_SETTINGS \
