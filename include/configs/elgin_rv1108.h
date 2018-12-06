@@ -22,7 +22,7 @@
                                 "load mmc 0:2 ${fdt_addr_r} /boot/${fdtfile} "
 #define UPDATEHUB_FIND_ROOT_B   "part uuid mmc 0:2 uuid"
 
-#define UPDATEHUB_BOOTARGS      "console=${console} root=PARTUUID=${uuid} " \
+#define UPDATEHUB_BOOTARGS      "console=ttyS2,1500000n8 root=PARTUUID=${uuid} " \
                                 "rootfstype=ext4 rootwait rw "
 #define UPDATEHUB_BOOTCMD       "bootz ${kernel_addr_r} - ${fdt_addr_r}"
 
