@@ -536,7 +536,7 @@ int mmc_map_to_kernel_blk(int dev_no)
 	return dev_no + 1;
 }
 
-#define USDHC2_CD_GPIO	IMX_GPIO_NR(2, 2)
+#define USDHC2_CD_GPIO	IMX_GPIO_NR(1, 2)
 #define USDHC3_CD_GPIO	IMX_GPIO_NR(2, 0)
 
 int board_mmc_getcd(struct mmc *mmc)
@@ -961,8 +961,9 @@ static void disable_lvds(struct display_info_t const *dev)
 
 static void do_enable_hdmi(struct display_info_t const *dev)
 {
-	disable_lvds(dev);
-	imx_enable_hdmi_phy();
+	printf("Enable hdmi deactivated\n");
+	//disable_lvds(dev);
+	//imx_enable_hdmi_phy();
 }
 
 static struct display_info_t const displays[] = {{
@@ -1011,6 +1012,7 @@ int board_video_skip(void)
 {
 	int i;
 	int ret;
+	printf("board_video_skip function\n");
 	char const *panel = getenv("panel");
 	if (!panel) {
 		for (i = 0; i < ARRAY_SIZE(displays); i++) {
