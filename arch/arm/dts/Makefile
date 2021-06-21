@@ -674,6 +674,7 @@ dtb-y += \
 	imx6q-mccmon6.dtb\
 	imx6q-nitrogen6x.dtb \
 	imx6q-novena.dtb \
+	imx6q-omni1000.dtb \
 	imx6q-pico.dtb \
 	imx6q-sabreauto.dtb \
 	imx6q-sabrelite.dtb \

@@ -1,0 +1,7 @@
+Omni1000
+M:	Fabio Estevam <festevam@gmail.com>
+S:	Maintained
+F:	board/jacto/omni1000/
+F:	include/configs/omni1000.h
+F:	configs/omni1000_defconfig
+F:	arch/arm/dts/imx6q-omni1000.dts
