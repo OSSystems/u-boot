@@ -16,3 +16,18 @@
 &usdhc2 {
 	status = "disabled";
 };
+
+&iomuxc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hog>;
+
+	pinctrl_hog: hoggrp {
+		fsl,pins = <
+			MX6QDL_PAD_EIM_A20__GPIO2_IO18  0x130b0
+			MX6QDL_PAD_EIM_DA5__GPIO3_IO05  0x130b0
+			MX6QDL_PAD_EIM_DA4__GPIO3_IO04  0x130b0
+			MX6QDL_PAD_EIM_DA3__GPIO3_IO03  0x1b0b0
+			MX6QDL_PAD_EIM_DA2__GPIO3_IO02  0x1b0b0
+		>;
+	};
+};

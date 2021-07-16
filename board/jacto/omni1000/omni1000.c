@@ -38,6 +38,10 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+#define MODEM_ONOFF IMX_GPIO_NR(3, 4)
+
+#define MODEM_USB_VBUS IMX_GPIO_NR(2, 18)
+
 #define UART_PAD_CTRL  (PAD_CTL_PUS_100K_UP |			\
 	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm |			\
 	PAD_CTL_SRE_FAST  | PAD_CTL_HYS)
@@ -68,6 +72,15 @@ int dram_init(void)
 				    (ulong)imx_ddr_size());
 
 	return 0;
+}
+
+static void setup_modem(void)
+{
+	gpio_request(MODEM_USB_VBUS, "modem_usb_vbus");
+	gpio_direction_output(MODEM_USB_VBUS, 1);
+
+	gpio_request(MODEM_ONOFF, "modem_onoff");
+	gpio_direction_output(MODEM_ONOFF, 1);
 }
 
 /* Apalis UART1 */
@@ -428,6 +441,7 @@ int board_init(void)
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
 
 	setup_iomux_gpio();
+	setup_modem();
 
 	return 0;
 }
