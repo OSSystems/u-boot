@@ -42,6 +42,10 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define MODEM_USB_VBUS IMX_GPIO_NR(2, 18)
 
+#define RS911X_RESET IMX_GPIO_NR(2, 4)
+
+#define RS911X_USB_VBUS IMX_GPIO_NR(6, 10)
+
 #define UART_PAD_CTRL  (PAD_CTL_PUS_100K_UP |			\
 	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm |			\
 	PAD_CTL_SRE_FAST  | PAD_CTL_HYS)
@@ -81,6 +85,15 @@ static void setup_modem(void)
 
 	gpio_request(MODEM_ONOFF, "modem_onoff");
 	gpio_direction_output(MODEM_ONOFF, 1);
+}
+
+static void setup_rs911x(void)
+{
+	gpio_request(RS911X_USB_VBUS, "rs911x_usb_vbus");
+	gpio_direction_output(RS911X_USB_VBUS, 1);
+
+	gpio_request(RS911X_RESET, "rs911x_reset");
+	gpio_direction_output(RS911X_RESET, 1);
 }
 
 /* Apalis UART1 */
@@ -442,6 +455,7 @@ int board_init(void)
 
 	setup_iomux_gpio();
 	setup_modem();
+	setup_rs911x();
 
 	return 0;
 }
