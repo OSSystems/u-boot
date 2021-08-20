@@ -35,11 +35,13 @@
 /* Environment */
 #define UPDATEHUB_LOAD_OS_A     "load mmc 0:2 ${loadaddr} /boot/zImage; " \
                                 "load mmc 0:2 ${fdtaddr} /boot/${fdtfile}"
-#define UPDATEHUB_FIND_ROOT_A   "part uuid mmc 0:2 uuid"
+#define UPDATEHUB_FIND_ROOT_A	"if run loadbootscript; then run bootscript; fi; " \
+				"part uuid mmc 0:2 uuid"
 
 #define UPDATEHUB_LOAD_OS_B     "load mmc 0:3 ${loadaddr} /boot/zImage; " \
                                 "load mmc 0:3 ${fdtaddr} /boot/${fdtfile}"
-#define UPDATEHUB_FIND_ROOT_B   "part uuid mmc 0:3 uuid"
+#define UPDATEHUB_FIND_ROOT_B	"if run loadbootscript; then run bootscript; fi; " \
+				"part uuid mmc 0:3 uuid"
 
 #define UPDATEHUB_BOOTARGS      "console=ttyS0,115200n8 root=PARTUUID=${uuid} " \
                                 "rootfstype=ext4 rootwait rw"
@@ -49,9 +51,12 @@
 
 #undef CONFIG_EXTRA_ENV_SETTINGS
 #define CONFIG_EXTRA_ENV_SETTINGS \
+	"bootscript=echo Running bootscript from mmc0 ...; source ${loadaddr}\0" \
+	"loadbootscript=load mmc 0:1 ${loadaddr} u-boot.scr\0" \
 	"fdtfile=am335x-mfc.dtb\0" \
 	"fdtaddr=0x88000000\0" \
 	"loadaddr=0x82000000\0" \
+	"rdaddr=0x88080000\0" \
 	UPDATEHUB_ENV
 #endif
 
