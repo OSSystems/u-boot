@@ -124,18 +124,6 @@ iomux_v3_cfg_t const usdhc1_pads[] = {
 #	define GPIO_MMC_CD IMX_GPIO_NR(4, 20)
 };
 
-/* Apalis SD1 */
-iomux_v3_cfg_t const usdhc2_pads[] = {
-	MX6_PAD_SD2_CLK__SD2_CLK    | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_SD2_CMD__SD2_CMD    | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_SD2_DAT0__SD2_DATA0 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_SD2_DAT1__SD2_DATA1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_SD2_DAT2__SD2_DATA2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_SD2_DAT3__SD2_DATA3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_NANDF_CS1__GPIO6_IO14  | MUX_PAD_CTRL(NO_PAD_CTRL), /* CD */
-#	define GPIO_SD_CD IMX_GPIO_NR(6, 14)
-};
-
 /* eMMC */
 iomux_v3_cfg_t const usdhc3_pads[] = {
 	MX6_PAD_SD3_CLK__SD3_CLK    | MUX_PAD_CTRL(USDHC_EMMC_PAD_CTRL),
@@ -388,12 +376,6 @@ int board_mmc_init(bd_t *bis)
 		imx_iomux_v3_setup_multiple_pads(usdhc1_pads, ARRAY_SIZE(usdhc1_pads));
 		usdhc_cfg[0].esdhc_base = USDHC1_BASE_ADDR;
 		usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
-		gd->arch.sdhc_clk = usdhc_cfg[0].sdhc_clk;
-		break;
-	case 0x1:
-		imx_iomux_v3_setup_multiple_pads(usdhc2_pads, ARRAY_SIZE(usdhc2_pads));
-		usdhc_cfg[0].esdhc_base = USDHC2_BASE_ADDR;
-		usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC2_CLK);
 		gd->arch.sdhc_clk = usdhc_cfg[0].sdhc_clk;
 		break;
 	case 0x2:
@@ -837,6 +819,29 @@ static void spl_dram_init(void)
 	udelay(100);
 }
 
+#define LTC_POWER_ON		IMX_GPIO_NR(1, 10)
+#define LTC_PB_INT		IMX_GPIO_NR(1, 15)
+#define LTC_PB_KILL		IMX_GPIO_NR(1, 14)
+
+iomux_v3_cfg_t const ltc_pads[] = {
+	MX6_PAD_SD2_DAT0__GPIO1_IO15 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	MX6_PAD_SD2_DAT1__GPIO1_IO14 | MUX_PAD_CTRL(WEAK_PULLDOWN),
+};
+
+static void setup_ltc_pads(void)
+{
+	imx_iomux_v3_setup_multiple_pads(ltc_pads, ARRAY_SIZE(ltc_pads));
+
+	gpio_request(LTC_PB_KILL, "ltc_pb_kill");
+	gpio_direction_output(LTC_PB_KILL, 0);
+
+	gpio_request(LTC_POWER_ON, "ltc_power_on");
+	gpio_direction_output(LTC_POWER_ON, 0);
+
+	gpio_request(LTC_PB_INT, "ltc_pb_int");
+	gpio_direction_input(LTC_PB_INT);
+}
+
 void board_init_f(ulong dummy)
 {
 	/* setup AIPS and disable watchdog */
@@ -844,6 +849,8 @@ void board_init_f(ulong dummy)
 
 	ccgr_init();
 	gpr_init();
+
+	setup_ltc_pads();
 
 	/* iomux */
 	board_early_init_f();
