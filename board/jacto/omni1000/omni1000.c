@@ -850,7 +850,8 @@ void board_init_f(ulong dummy)
 	ccgr_init();
 	gpr_init();
 
-	setup_ltc_pads();
+	if (!is_boot_from_usb())
+		setup_ltc_pads();
 
 	/* iomux */
 	board_early_init_f();
