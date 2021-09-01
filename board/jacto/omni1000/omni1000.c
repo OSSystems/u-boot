@@ -35,6 +35,8 @@
 #include <micrel.h>
 #include <miiphy.h>
 #include <netdev.h>
+#include <fdt_support.h>
+#include <linux/libfdt.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -491,13 +493,6 @@ int checkboard(void)
 	return 0;
 }
 
-#if defined(CONFIG_OF_LIBFDT) && defined(CONFIG_OF_BOARD_SETUP)
-int ft_board_setup(void *blob, bd_t *bd)
-{
-	return ft_common_board_setup(blob, bd);
-}
-#endif
-
 #ifdef CONFIG_CMD_BMODE
 static const struct boot_mode board_boot_modes[] = {
 	/* 4-bit bus width */
@@ -519,6 +514,19 @@ int misc_init_r(void)
 /* TODO, use external pmic, for now always ldo_enable */
 void ldo_mode_set(int ldo_bypass)
 {
+}
+#endif
+
+#ifdef CONFIG_OF_BOARD_SETUP
+int ft_board_setup(void *blob, bd_t *bd)
+{
+	int offset;
+
+	offset = fdt_node_offset_by_compatible(blob, 0, "lltc,ltc2955-poweroff");
+	if ((offset > 0) && is_boot_from_usb())
+		fdt_status_disabled(blob, offset);
+
+	return 0;
 }
 #endif
 
