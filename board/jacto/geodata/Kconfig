@@ -1,0 +1,12 @@
+if TARGET_GEODATA
+
+config SYS_BOARD
+	default "geodata"
+
+config SYS_VENDOR
+	default "jacto"
+
+config SYS_CONFIG_NAME
+	default "geodata"
+
+endif

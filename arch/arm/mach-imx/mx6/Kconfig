@@ -477,6 +477,13 @@ config TARGET_MX6ULL_14X14_EVK
 	select MX6ULL
 	imply CMD_DM
 
+config TARGET_GEODATA
+	bool "Jacto i.MX6ULL Geodata board"
+	select DM
+	select DM_THERMAL
+	select MX6ULL
+	imply CMD_DM
+
 config TARGET_NITROGEN6X
 	bool "nitrogen6x"
 	imply USB_ETHER_ASIX
@@ -748,6 +755,7 @@ source "board/phytec/pcm058/Kconfig"
 source "board/phytec/pfla02/Kconfig"
 source "board/phytec/pcl063/Kconfig"
 source "board/gateworks/gw_ventana/Kconfig"
+source "board/jacto/geodata/Kconfig"
 source "board/jacto/imx6ul-telemetry/Kconfig"
 source "board/kosagi/novena/Kconfig"
 source "board/softing/vining_2000/Kconfig"
