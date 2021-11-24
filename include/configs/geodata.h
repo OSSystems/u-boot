@@ -28,6 +28,7 @@
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	CONFIG_MFG_ENV_SETTINGS \
+	"script=boot.scr\0" \
 	"console=ttymxc0\0" \
 	"fdt_file=imx6ull-geodata.dtb\0" \
 	"fdt_high=0xffffffff\0" \
@@ -36,18 +37,22 @@
 	"fdt_addr=0x83000000\0" \
 	"image=zImage\0" \
 	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
+	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
 	"kernel_addr_r=" __stringify(CONFIG_LOADADDR) "\0" \
 	"pxefile_addr_r=" __stringify(CONFIG_LOADADDR) "\0" \
 	"ramdisk_addr_r=0x83800000\0" \
 	"ramdiskaddr=0x83800000\0" \
 	"scriptaddr=" __stringify(CONFIG_LOADADDR) "\0" \
-	BOOTENV
+	"loadbootscript=" \
+		"load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};\0" \
+	"bootscript=echo Running bootscript from mmc ...; " \
+		"source\0" \
 
-#define BOOT_TARGET_DEVICES(func) \
-	func(MMC, mmc, 1) \
-	func(USB, usb, 0)
+#define CONFIG_BOOTCOMMAND \
+	"if run loadbootscript; then " \
+		"run bootscript; " \
+	"fi; " \
 
-#include <config_distro_bootcmd.h>
 #include <linux/stringify.h>
 
 /* Miscellaneous configurable options */
@@ -69,6 +74,7 @@
 
 /* environment organization */
 #define CONFIG_SYS_MMC_ENV_DEV		1	/* USDHC2 */
+#define CONFIG_SYS_MMC_IMG_LOAD_PART    1
 
 #define CONFIG_MXC_USB_PORTSC		(PORT_PTS_UTMI | PORT_PTS_PTW)
 
