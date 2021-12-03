@@ -19,6 +19,9 @@ DECLARE_GLOBAL_DATA_PTR;
 	PAD_CTL_PUS_100K_UP | PAD_CTL_SPEED_MED |		\
 	PAD_CTL_DSE_40ohm   | PAD_CTL_SRE_FAST  | PAD_CTL_HYS)
 
+#define PWR_4G		IMX_GPIO_NR(1, 4)
+#define ONOFF_4G	IMX_GPIO_NR(1, 9)
+
 int dram_init(void)
 {
 	gd->ram_size = imx_ddr_size();
@@ -31,9 +34,28 @@ static iomux_v3_cfg_t const uart1_pads[] = {
 	MX6_PAD_UART1_RX_DATA__UART1_DCE_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
 };
 
+static iomux_v3_cfg_t const modem_pads[] = {
+	MX6_PAD_GPIO1_IO04__GPIO1_IO04 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	MX6_PAD_GPIO1_IO09__GPIO1_IO09 | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
+
 static void setup_iomux_uart(void)
 {
 	imx_iomux_v3_setup_multiple_pads(uart1_pads, ARRAY_SIZE(uart1_pads));
+}
+
+static void setup_modem(void)
+{
+	imx_iomux_v3_setup_multiple_pads(modem_pads, ARRAY_SIZE(modem_pads));
+	gpio_request(PWR_4G, "PWR_4G");
+	gpio_direction_output(PWR_4G, 1);
+	gpio_request(ONOFF_4G, "ONOFF_4G");
+	gpio_direction_output(ONOFF_4G, 1);
+}
+
+void board_preboot_os(void)
+{
+	setup_modem();
 }
 
 int board_early_init_f(void)
