@@ -856,7 +856,6 @@ dtb-$(CONFIG_ARCH_IMX8) += \
 dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mm-evk.dtb \
 	imx8mm-evk-qca-wifi.dtb \
-	imx8mm-ddr4-evk.dtb \
 	imx8mm-ddr3l-val.dtb \
 	imx8mm-ddr4-val.dtb \
 	imx8mm-venice.dtb \
@@ -878,8 +877,6 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mp-evk.dtb \
 	imx8mp-phyboard-pollux-rdk.dtb \
 	imx8mq-pico-pi.dtb \
-	imx8mm-ddr4-ab2.dtb \
-	imx8mm-ab2.dtb \
 	imx8mn-ddr4-ab2.dtb \
 	imx8mn-ddr3l-ab2.dtb \
 	imx8mn-ab2.dtb
