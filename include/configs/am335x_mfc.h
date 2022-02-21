@@ -44,7 +44,7 @@
 				"part uuid mmc 0:3 uuid"
 
 #define UPDATEHUB_BOOTARGS      "console=ttyS0,115200n8 root=PARTUUID=${uuid} " \
-                                "rootfstype=ext4 rootwait rw"
+                                "rootfstype=ext4 rootwait rw fsck.repair=yes"
 #define UPDATEHUB_BOOTCMD       "bootz ${loadaddr} - ${fdtaddr}"
 
 #include <configs/updatehub-common.h>
