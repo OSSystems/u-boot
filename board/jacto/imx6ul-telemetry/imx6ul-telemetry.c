@@ -24,9 +24,6 @@
 #include <usb/ehci-ci.h>
 #include <miiphy.h>
 #include <netdev.h>
-#include <power/pmic.h>
-#include <power/pfuze3000_pmic.h>
-#include "../../freescale/common/pfuze.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -182,39 +179,6 @@ static void enable_ignition_pwr_en(void)
 	gpio_direction_output(IGNITION_PWR_EN, 1);
 }
 
-#ifdef CONFIG_DM_PMIC
-int power_init_board(void)
-{
-	struct udevice *dev;
-	int ret, dev_id, rev_id;
-
-	ret = pmic_get("pfuze3000@8", &dev);
-	if (ret < 0)
-		return ret;
-
-	dev_id = pmic_reg_read(dev, PFUZE3000_DEVICEID);
-	rev_id = pmic_reg_read(dev, PFUZE3000_REVID);
-	printf("PMIC: PFUZE3000 DEV_ID=0x%x REV_ID=0x%x\n", dev_id, rev_id);
-
-	/* disable Low Power Mode during standby mode */
-	pmic_reg_write(dev, PFUZE3000_LDOGCTL, 0x1);
-
-	/* SW1B step ramp up time from 2us to 4us/25mV */
-	pmic_reg_write(dev, PFUZE3000_SW1BCONF, 0x40);
-
-	/* SW1B mode to APS/PFM */
-	pmic_reg_write(dev, PFUZE3000_SW1BMODE, 0xc);
-
-	/* SW1B standby voltage set to 0.975V */
-	pmic_reg_write(dev, PFUZE3000_SW1BSTBY, 0xb);
-
-	/* SW1B voltage set to 1.400V */
-	pmic_reg_write(dev, PFUZE3000_SW1BVOLT, 0x1c);
-
-	return 0;
-}
-#endif
-
 int board_init(void)
 {
 	/* Address of boot parameters */
@@ -232,9 +196,17 @@ int board_init(void)
 }
 
 #ifdef CONFIG_SPL_BUILD
+#include <i2c.h>
+#include <power/pfuze3000_pmic.h>
+#include "../../freescale/common/pfuze.h"
 #include <linux/libfdt.h>
 #include <spl.h>
 #include <asm/arch/mx6-ddr.h>
+#include <power/pmic.h>
+#include <exports.h>
+#include <asm/gpio.h>
+#include <asm/mach-imx/iomux-v3.h>
+#include <asm/mach-imx/mxc_i2c.h>
 
 static struct mx6ul_iomux_grp_regs mx6_grp_ioregs = {
 	.grp_addds = 0x00000030,
@@ -313,6 +285,64 @@ static void ccgr_init(void)
 	writel(0xFFFFFFFF, &ccm->CCGR7);
 }
 
+struct i2c_pads_info i2c_pad_info = {
+	.scl = {
+		.i2c_mode = MX6_PAD_GPIO1_IO02__I2C1_SCL | MUX_PAD_CTRL(0x4001b8b0),
+		.gpio_mode = MX6_PAD_GPIO1_IO02__GPIO1_IO02 | MUX_PAD_CTRL(0x4001b8b0),
+		.gp = IMX_GPIO_NR(1, 2)
+	},
+	.sda = {
+		.i2c_mode = MX6_PAD_GPIO1_IO03__I2C1_SDA | MUX_PAD_CTRL(0x4001b8b0),
+		.gpio_mode = MX6_PAD_GPIO1_IO03__GPIO1_IO03 | MUX_PAD_CTRL(0x4001b8b0),
+		.gp = IMX_GPIO_NR(1, 3)
+	}
+};
+
+#ifdef CONFIG_POWER
+#define I2C_PMIC	0
+int power_init_board(void)
+{
+	unsigned int reg, rev_id;
+	struct pmic *p;
+	int ret;
+
+	ret = power_pfuze3000_init(I2C_PMIC);
+	if (ret)
+		return ret;
+
+	p = pmic_get("PFUZE3000");
+	ret = pmic_probe(p);
+	if (ret) {
+		printf("Warning: Cannot find PMIC PFUZE3000\n");
+		return 0;
+	}
+
+	pmic_reg_read(p, PFUZE3000_DEVICEID, &reg);
+	pmic_reg_read(p, PFUZE3000_REVID, &rev_id);
+	printf("PMIC: PFUZE3000 DEV_ID=0x%x REV_ID=0x%x\n", reg, rev_id);
+
+	/* disable Low Power Mode during standby mode */
+	pmic_reg_write(p, PFUZE3000_LDOGCTL, 0x1);
+
+	/* SW1B step ramp up time from 2us to 4us/25mV */
+	pmic_reg_write(p, PFUZE3000_SW1BCONF, 0x40);
+
+	/* SW1B mode to APS/PFM */
+	pmic_reg_write(p, PFUZE3000_SW1BMODE, 0xc);
+
+	/* SW1B standby voltage set to 0.975V */
+	pmic_reg_write(p, PFUZE3000_SW1BSTBY, 0xb);
+
+	/* SW1B voltage set to 1.400V */
+	pmic_reg_write(p, PFUZE3000_SW1BVOLT, 0x1c);
+
+	/* Set SW3 to 1.35V */
+	pmic_reg_write(p, PFUZE3000_SW3VOLT, PFUZE3000_SW3_SETP(13500));
+
+	return 0;
+}
+#endif
+
 static void spl_dram_init(void)
 {
 	mx6ul_dram_iocfg(mem_ddr.width, &mx6_ddr_ioregs, &mx6_grp_ioregs);
@@ -335,6 +365,8 @@ void board_init_f(ulong dummy)
 	/* UART clocks enabled and gd valid - init serial console */
 	preloader_console_init();
 
+	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info);
+	power_init_board();
 	/* DDR initialization */
 	spl_dram_init();
 

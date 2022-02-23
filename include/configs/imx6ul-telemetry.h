@@ -99,4 +99,23 @@
 
 #define CONFIG_IMX_THERMAL
 
+#ifdef CONFIG_SPL_BUILD
+#define CONFIG_SPL_POWER_SUPPORT
+
+#undef CONFIG_DM_MMC
+#undef CONFIG_DM_PMIC
+#undef CONFIG_DM_PMIC_PFUZE100
+
+#define CONFIG_SYS_I2C
+#define CONFIG_SYS_I2C_MXC_I2C1		/* enable I2C bus 1 */
+#define CONFIG_SYS_I2C_MXC_I2C2		/* enable I2C bus 2 */
+#define CONFIG_SYS_I2C_MXC_I2C3		/* enable I2C bus 3 */
+
+
+#define CONFIG_POWER
+#define CONFIG_POWER_I2C
+#define CONFIG_POWER_PFUZE3000
+#define CONFIG_POWER_PFUZE3000_I2C_ADDR	0x08
+#endif
+
 #endif
