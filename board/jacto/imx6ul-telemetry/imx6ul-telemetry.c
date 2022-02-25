@@ -211,6 +211,9 @@ int power_init_board(void)
 	/* SW1B voltage set to 1.400V */
 	pmic_reg_write(dev, PFUZE3000_SW1BVOLT, 0x1c);
 
+	/* Set SW3 to 1.35V */
+	pmic_reg_write(dev, PFUZE3000_SW3VOLT, PFUZE3000_SW3_SETP(13500));
+
 	return 0;
 }
 #endif
