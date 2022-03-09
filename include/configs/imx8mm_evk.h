@@ -138,6 +138,9 @@
 	"kernel_addr_r=" __stringify(CONFIG_LOADADDR) "\0" \
 	"bsp_script=boot.scr\0" \
 	"image=Image\0" \
+	"fitimage=fitImage\0" \
+	"fit_script=bootscr-boot.scr\0" \
+	"fitimage_addr=0x90000000\0"			\
 	"splashimage=0x50000000\0" \
 	"console=ttymxc0,115200 earlycon=ec_imx6q,0x30860000,115200\0" \
 	"fdt_addr_r=0x43000000\0"			\
@@ -155,6 +158,9 @@
 	"bootscript=echo Running bootscript from mmc ...; " \
 		"source\0" \
 	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
+	"loadfit=fatload mmc ${mmcdev}:${mmcpart} ${fitimage_addr} ${fitimage}\0" \
+	"extractscript=imxtract ${fitimage_addr} ${fit_script} ${fitimage_addr}\0" \
+	"bootfitscript=source ${fitimage_addr}\0" \
 	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr_r} ${fdtfile}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run mmcargs; " \
@@ -189,6 +195,10 @@
 		"fi;\0" \
 	"bsp_bootcmd=echo Running BSP bootcmd ...; " \
 		"mmc dev ${mmcdev}; if mmc rescan; then " \
+		   "if run loadfit; then " \
+			   "run extractscript; " \
+			   "run bootfitscript; " \
+		   "fi; " \
 		   "if run loadbootscript; then " \
 			   "run bootscript; " \
 		   "else " \
