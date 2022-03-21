@@ -55,12 +55,13 @@
 
 /* Framebuffer and LCD */
 #define CONFIG_VIDEO_BMP_RLE8
+#define CONFIG_VIDEO_LOGO
 #define CONFIG_SPLASH_SCREEN
 #define CONFIG_SPLASH_SCREEN_ALIGN
-#define CONFIG_BMP_16BPP
-#define CONFIG_VIDEO_LOGO
+#define CONFIG_SPLASH_SOURCE
 #define CONFIG_VIDEO_BMP_LOGO
-#define CONFIG_IMX_HDMI
+#define CONFIG_BMP_16BPP
+#define CONFIG_SYS_VIDEO_LOGO_MAX_SIZE	(2 << 20)
 #define CONFIG_IMX_VIDEO_SKIP
 
 /* allow to overwrite serial and ethaddr */
@@ -81,7 +82,10 @@
 #define CONFIG_EXTRA_ENV_SETTINGS \
     CONFIG_MFG_ENV_SETTINGS \
 	"console=ttymxc0\0" \
-	"splashimage=" __stringify(CONFIG_LOADADDR) "\0" \
+	"splashpos=m,m\0" \
+	"splashimage=0x11000000\0" \
+	"splashsource=mmc_fs\0" \
+	"splashfile=bootsplash.bmp\0" \
 	"fdt_file=" CONFIG_DEFAULT_FDT_FILE "\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \

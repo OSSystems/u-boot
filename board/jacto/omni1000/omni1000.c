@@ -515,6 +515,23 @@ static void setup_display(void)
 }
 #endif /* CONFIG_VIDEO_IPUV3 */
 
+#ifdef CONFIG_SPLASH_SCREEN
+static struct splash_location default_splash_locations[] = {
+	{
+		.name		= "mmc_fs",
+		.storage	= SPLASH_STORAGE_MMC,
+		.flags		= SPLASH_STORAGE_FS,
+		.devpart	= "0:1",
+	},
+};
+
+int splash_screen_prepare(void)
+{
+	return splash_source_load(default_splash_locations,
+				   ARRAY_SIZE(default_splash_locations));
+}
+#endif
+
 int overwrite_console(void)
 {
 	return 1;
