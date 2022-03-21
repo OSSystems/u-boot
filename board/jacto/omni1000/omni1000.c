@@ -37,6 +37,9 @@
 #include <netdev.h>
 #include <fdt_support.h>
 #include <linux/libfdt.h>
+#include <asm/mach-imx/iomux-v3.h>
+#include <asm/mach-imx/video.h>
+#include <splash.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -411,6 +414,16 @@ static iomux_v3_cfg_t const pwr_intb_pads[] = {
 	MX6_PAD_GPIO_18__GPIO7_IO13 | MUX_PAD_CTRL(NO_PAD_CTRL)
 };
 
+static iomux_v3_cfg_t const lcd_pads[] = {
+	MX6_PAD_SD4_DAT2__GPIO2_IO10 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	MX6_PAD_EIM_DA13__GPIO3_IO13 | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
+
+static void setup_iomux_lcd(void)
+{
+	imx_iomux_v3_setup_multiple_pads(lcd_pads, ARRAY_SIZE(lcd_pads));
+}
+
 int board_early_init_f(void)
 {
 	imx_iomux_v3_setup_multiple_pads(pwr_intb_pads,
@@ -420,13 +433,88 @@ int board_early_init_f(void)
 #else
 	setup_iomux_dce_uart();
 #endif
+	setup_iomux_lcd();
 	return 0;
 }
 
-/*
- * Do not overwrite the console
- * Use always serial for U-Boot console
- */
+#if defined(CONFIG_VIDEO_IPUV3)
+#define LVDS_PWM	IMX_GPIO_NR(2, 10)
+#define LVDS_BL	IMX_GPIO_NR(3, 13)
+static void enable_lvds(struct display_info_t const *dev)
+{
+	gpio_request(LVDS_PWM, "LVDS_PWM");
+	gpio_request(LVDS_BL, "LVDS_BL");
+	gpio_direction_output(LVDS_PWM, 1);
+	gpio_direction_output(LVDS_BL, 1);
+}
+
+struct display_info_t const displays[] = {{
+	.bus	= -1,
+	.addr	= 0,
+	.pixfmt	= IPU_PIX_FMT_LVDS666,
+	.detect	= NULL,
+	.enable	= enable_lvds,
+	.mode	= {
+		.name           = "Z080XG03JCT3",
+		.refresh        = 60,
+		.xres           = 1280,
+		.yres           = 800,
+		.pixclock       = 14065,
+		.left_margin    = 40,
+		.right_margin   = 40,
+		.upper_margin   = 3,
+		.lower_margin   = 80,
+		.hsync_len      = 10,
+		.vsync_len      = 10,
+		.sync           = FB_SYNC_EXT,
+		.vmode          = FB_VMODE_NONINTERLACED
+} } };
+size_t display_count = ARRAY_SIZE(displays);
+
+static void setup_display(void)
+{
+	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
+	struct iomuxc *iomux = (struct iomuxc *)IOMUXC_BASE_ADDR;
+	int reg;
+
+	enable_ipu_clock();
+
+	/* Turn on LDB0, LDB1, IPU,IPU DI0 clocks */
+	reg = readl(&mxc_ccm->CCGR3);
+	reg |=  MXC_CCM_CCGR3_LDB_DI0_MASK | MXC_CCM_CCGR3_LDB_DI1_MASK;
+	writel(reg, &mxc_ccm->CCGR3);
+
+	reg = readl(&mxc_ccm->cscmr2);
+	reg |= MXC_CCM_CSCMR2_LDB_DI0_IPU_DIV | MXC_CCM_CSCMR2_LDB_DI1_IPU_DIV;
+	writel(reg, &mxc_ccm->cscmr2);
+
+	reg = readl(&mxc_ccm->chsccdr);
+	reg |= (CHSCCDR_CLK_SEL_LDB_DI0
+		<< MXC_CCM_CHSCCDR_IPU1_DI0_CLK_SEL_OFFSET);
+	reg |= (CHSCCDR_CLK_SEL_LDB_DI0
+		<< MXC_CCM_CHSCCDR_IPU1_DI1_CLK_SEL_OFFSET);
+	writel(reg, &mxc_ccm->chsccdr);
+
+	reg = IOMUXC_GPR2_BGREF_RRMODE_EXTERNAL_RES
+	     | IOMUXC_GPR2_DI1_VS_POLARITY_ACTIVE_LOW
+	     | IOMUXC_GPR2_DI0_VS_POLARITY_ACTIVE_LOW
+	     | IOMUXC_GPR2_BIT_MAPPING_CH1_SPWG
+	     | IOMUXC_GPR2_DATA_WIDTH_CH1_18BIT
+	     | IOMUXC_GPR2_BIT_MAPPING_CH0_SPWG
+	     | IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT
+	     | IOMUXC_GPR2_LVDS_CH1_MODE_DISABLED
+	     | IOMUXC_GPR2_LVDS_CH0_MODE_ENABLED_DI0;
+	writel(reg, &iomux->gpr[2]);
+
+	reg = readl(&iomux->gpr[3]);
+	reg = (reg & ~(IOMUXC_GPR3_LVDS0_MUX_CTL_MASK
+			| IOMUXC_GPR3_HDMI_MUX_CTL_MASK))
+	    | (IOMUXC_GPR3_MUX_SRC_IPU1_DI0
+	       << IOMUXC_GPR3_LVDS0_MUX_CTL_OFFSET);
+	writel(reg, &iomux->gpr[3]);
+}
+#endif /* CONFIG_VIDEO_IPUV3 */
+
 int overwrite_console(void)
 {
 	return 1;
@@ -436,6 +524,10 @@ int board_init(void)
 {
 	/* address of boot parameters */
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
+
+#if defined(CONFIG_VIDEO_IPUV3)
+	setup_display();
+#endif
 
 	setup_iomux_gpio();
 	setup_modem();

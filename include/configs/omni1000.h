@@ -54,14 +54,12 @@
 #define CONFIG_USBD_HS
 
 /* Framebuffer and LCD */
-#define CONFIG_SYS_CONSOLE_OVERWRITE_ROUTINE
 #define CONFIG_VIDEO_BMP_RLE8
 #define CONFIG_SPLASH_SCREEN
 #define CONFIG_SPLASH_SCREEN_ALIGN
 #define CONFIG_BMP_16BPP
 #define CONFIG_VIDEO_LOGO
 #define CONFIG_VIDEO_BMP_LOGO
-#define CONFIG_CONSOLE_MUX
 #define CONFIG_IMX_HDMI
 #define CONFIG_IMX_VIDEO_SKIP
 
@@ -83,6 +81,7 @@
 #define CONFIG_EXTRA_ENV_SETTINGS \
     CONFIG_MFG_ENV_SETTINGS \
 	"console=ttymxc0\0" \
+	"splashimage=" __stringify(CONFIG_LOADADDR) "\0" \
 	"fdt_file=" CONFIG_DEFAULT_FDT_FILE "\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
