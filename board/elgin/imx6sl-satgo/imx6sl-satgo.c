@@ -64,7 +64,3 @@ int checkboard(void)
 
 	return 0;
 }
-
-void reset_cpu(ulong addr)
-{
-}
