@@ -10,6 +10,7 @@
 
 	aliases {
 		mmc0 = &usdhc2;
+		usb0 = &usbotg1;
 	};
 
 	memory {
@@ -27,6 +28,14 @@
 &uart1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart1>;
+	status = "okay";
+};
+
+&usbotg1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usbotg1>;
+	disable-over-current;
+	dr_mode = "peripheral";
 	status = "okay";
 };
 
@@ -52,6 +61,12 @@
 		fsl,pins = <
 			MX6SL_PAD_UART1_RXD__UART1_RX_DATA	0x1b0b1
 			MX6SL_PAD_UART1_TXD__UART1_TX_DATA	0x1b0b1
+		>;
+	};
+
+	pinctrl_usbotg1: usbotg1grp {
+		fsl,pins = <
+			MX6SL_PAD_EPDC_PWRCOM__USB_OTG1_ID	0x17059
 		>;
 	};
 
