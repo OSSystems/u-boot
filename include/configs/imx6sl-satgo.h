@@ -16,78 +16,19 @@
 #define CONFIG_MXC_UART_BASE		UART1_IPS_BASE_ADDR
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
-	"script=boot.scr\0" \
-	"image=zImage\0" \
-	"console=ttymxc0\0" \
+	"image=boot/zImage\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
-	"fdt_file=imx6sl-satgo.dtb\0" \
+	"fdt_file=boot/imx6sl-satgo.dtb\0" \
 	"fdt_addr=0x88000000\0" \
-	"boot_fdt=try\0" \
-	"ip_dyn=yes\0" \
+	"mmcdev=0\0" \
 	"mmcdev=1\0" \
-	"mmcpart=1\0" \
-	"finduuid=part uuid mmc 1:2 uuid\0" \
-	"mmcargs=setenv bootargs console=${console},${baudrate} " \
-		"root=PARTUUID=${uuid} rootwait rw\0" \
-	"loadbootscript=" \
-		"fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};\0" \
-	"bootscript=echo Running bootscript from mmc ...; " \
-		"source\0" \
-	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
-	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
-	"mmcboot=echo Booting from mmc ...; " \
-		"run finduuid; " \
-		"run mmcargs; " \
-		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
-			"if run loadfdt; then " \
-				"bootz ${loadaddr} - ${fdt_addr}; " \
-			"else " \
-				"if test ${boot_fdt} = try; then " \
-					"bootz; " \
-				"else " \
-					"echo WARN: Cannot load the DT; " \
-				"fi; " \
-			"fi; " \
-		"else " \
-			"bootz; " \
-		"fi;\0" \
-	"netargs=setenv bootargs console=${console},${baudrate} " \
-		"root=/dev/nfs " \
-	"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
-		"netboot=echo Booting from net ...; " \
-		"run netargs; " \
-		"if test ${ip_dyn} = yes; then " \
-			"setenv get_cmd dhcp; " \
-		"else " \
-			"setenv get_cmd tftp; " \
-		"fi; " \
-		"${get_cmd} ${image}; " \
-		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
-			"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
-				"bootz ${loadaddr} - ${fdt_addr}; " \
-			"else " \
-				"if test ${boot_fdt} = try; then " \
-					"bootz; " \
-				"else " \
-					"echo WARN: Cannot load the DT; " \
-				"fi; " \
-			"fi; " \
-		"else " \
-			"bootz; " \
-		"fi;\0"
+	"bootargs=root=/dev/mmcblk0p1 rootwait rw\0"
 
 #define CONFIG_BOOTCOMMAND \
-	   "mmc dev ${mmcdev}; if mmc rescan; then " \
-		   "if run loadbootscript; then " \
-			   "run bootscript; " \
-		   "else " \
-			   "if run loadimage; then " \
-				   "run mmcboot; " \
-			   "else run netboot; " \
-			   "fi; " \
-		   "fi; " \
-	   "else run netboot; fi"
+	"load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}; \
+	load mmc ${mmcdev}:${mmcpart} ${loadaddr} zImage;\
+	bootz ${loadaddr} - ${fdt_addr}"
 
 /* Miscellaneous configurable options */
 
