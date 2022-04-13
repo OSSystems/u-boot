@@ -702,7 +702,8 @@ dtb-y += \
 
 endif
 
-dtb-$(CONFIG_MX6SL) += imx6sl-evk.dtb
+dtb-$(CONFIG_MX6SL) += imx6sl-evk.dtb \
+			imx6sl-satgo.dtb
 
 dtb-$(CONFIG_MX6SLL) += imx6sll-evk.dtb
 

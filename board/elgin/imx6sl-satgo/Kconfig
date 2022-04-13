@@ -1,0 +1,12 @@
+if TARGET_IMX6SL_SATGO
+
+config SYS_BOARD
+	default "imx6sl-satgo"
+
+config SYS_VENDOR
+	default "elgin"
+
+config SYS_CONFIG_NAME
+	default "imx6sl-satgo"
+
+endif
