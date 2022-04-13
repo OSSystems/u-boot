@@ -390,6 +390,13 @@ config TARGET_MX6SABRESD
 	select SUPPORT_SPL
 	imply CMD_DM
 
+config TARGET_IMX6SL_SATGO
+	bool "imx6sl-satgo"
+	depends on MX6SL
+	select DM
+	select DM_THERMAL
+	imply CMD_DM
+
 config TARGET_MX6SLEVK
 	bool "mx6slevk"
 	depends on MX6SL
@@ -726,6 +733,7 @@ source "board/compulab/cm_fx6/Kconfig"
 source "board/congatec/cgtqmx6eval/Kconfig"
 source "board/dhelectronics/dh_imx6/Kconfig"
 source "board/el/el6x/Kconfig"
+source "board/elgin/imx6sl-satgo/Kconfig"
 source "board/embest/mx6boards/Kconfig"
 source "board/engicam/imx6q/Kconfig"
 source "board/engicam/imx6ul/Kconfig"
