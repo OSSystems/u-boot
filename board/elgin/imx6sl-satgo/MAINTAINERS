@@ -1,0 +1,6 @@
+IMX6SL-SATGO BOARD
+M:	Fabio Estevam <festevam@gmail.com>
+S:	Maintained
+F:	board/elgin/imx6sl-satgo/
+F:	include/configs/imx6sl-satgo.h
+F:	configs/imx6sl-satgo_defconfig
