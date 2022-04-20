@@ -16,19 +16,28 @@
 #define CONFIG_MXC_UART_BASE		UART1_IPS_BASE_ADDR
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
-	"image=boot/zImage\0" \
-	"fdt_high=0xffffffff\0" \
-	"initrd_high=0xffffffff\0" \
-	"fdt_file=boot/imx6sl-satgo.dtb\0" \
-	"fdt_addr=0x88000000\0" \
-	"mmcdev=0\0" \
-	"mmcdev=1\0" \
-	"bootargs=root=/dev/mmcblk0p1 rootwait rw\0"
+        "image=zImage\0" \
+        "fdt_high=0xffffffff\0" \
+        "initrd_high=0xffffffff\0" \
+        "fdt_file=imx6sl-satgo.dtb\0" \
+        "fdt_addr=0x88000000\0" \
+        "mmcdev=0\0" \
+        "mmcdev=1\0" \
+        UPDATEHUB_ENV
 
-#define CONFIG_BOOTCOMMAND \
-	"load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}; \
-	load mmc ${mmcdev}:${mmcpart} ${loadaddr} zImage;\
-	bootz ${loadaddr} - ${fdt_addr}"
+#define UPDATEHUB_LOAD_OS_A     "load mmc 0:2 ${loadaddr} /boot/${image}; " \
+                                "load mmc 0:2 ${fdt_addr} /boot/${fdt_file} "
+#define UPDATEHUB_FIND_ROOT_A   "part uuid mmc 0:2 uuid"
+
+#define UPDATEHUB_LOAD_OS_B     "load mmc 0:3 ${loadaddr} /boot/${image}; " \
+                                "load mmc 0:3 ${fdt_addr} /boot/${fdt_file} "
+#define UPDATEHUB_FIND_ROOT_B   "part uuid mmc 0:2 uuid"
+
+#define UPDATEHUB_BOOTARGS      "console=ttymxc0,1500000n8 root=PARTUUID=${uuid} " \
+                                "rootfstype=ext4 rootwait rw "
+#define UPDATEHUB_BOOTCMD       "bootz ${loadaddr} - ${fdt_addr}"
+
+#include <configs/updatehub-common.h>
 
 /* Miscellaneous configurable options */
 
