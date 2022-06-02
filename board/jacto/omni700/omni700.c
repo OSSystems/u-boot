@@ -11,7 +11,10 @@
 #include <asm/mach-imx/video.h>
 #include <asm/io.h>
 #include <common.h>
+#include <env.h>
 #include <linux/delay.h>
+#include <linux/math64.h>
+#include <net.h>
 #include <splash.h>
 
 DECLARE_GLOBAL_DATA_PTR;
@@ -186,5 +189,27 @@ int board_init(void)
 #if defined(CONFIG_VIDEO_IPUV3)
 	setup_display();
 #endif
+	return 0;
+}
+
+int board_late_init(void)
+{
+	unsigned int cfg0, cfg1, remainder;
+	unsigned char mac[6];
+
+	cfg0 = readl(OCOTP_BASE_ADDR + 0x410);
+	cfg1 = readl(OCOTP_BASE_ADDR + 0x420);
+
+	div_u64_rem((u64)cfg0 + (u64)cfg1, 10000000, &remainder);
+
+	mac[0] = 0x00;
+	mac[1] = (unsigned char)cfg0;
+	mac[2] = (cfg0 >> 8) & 0xFF;
+	mac[3] = remainder & 0xFF;
+	mac[4] = (remainder >> 8) & 0xFF;
+	mac[5] = (remainder >> 16) & 0xFF;
+
+	eth_env_set_enetaddr("ethaddr", mac);
+
 	return 0;
 }
