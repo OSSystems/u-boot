@@ -9,9 +9,13 @@
 #define __CONFIG_H
 
 #include "mx6_common.h"
+#include "imx6_spl.h"
 
 /* Size of malloc() pool */
 #define CONFIG_SYS_MALLOC_LEN		(3 * SZ_1M)
+
+/* MMC Configuration */
+#define CONFIG_SYS_FSL_ESDHC_ADDR	USDHC2_BASE_ADDR
 
 #define CONFIG_MXC_UART_BASE		UART1_IPS_BASE_ADDR
 
@@ -53,7 +57,10 @@
 #define CONFIG_SYS_INIT_SP_ADDR \
 	(CONFIG_SYS_INIT_RAM_ADDR + CONFIG_SYS_INIT_SP_OFFSET)
 
+#define CONFIG_EHCI_HCD_INIT_AFTER_RESET
 #define CONFIG_MXC_USB_PORTSC		(PORT_PTS_UTMI | PORT_PTS_PTW)
+#define CONFIG_MXC_USB_FLAGS			0
+#define CONFIG_USB_MAX_CONTROLLER_COUNT	1
 #define CONFIG_IMX_THERMAL
 #define CONFIG_USBD_HS
 #endif				/* __CONFIG_H */

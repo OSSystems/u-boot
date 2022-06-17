@@ -395,6 +395,7 @@ config TARGET_IMX6SL_SATGO
 	depends on MX6SL
 	select DM
 	select DM_THERMAL
+	select SUPPORT_SPL
 	imply CMD_DM
 
 config TARGET_MX6SLEVK
