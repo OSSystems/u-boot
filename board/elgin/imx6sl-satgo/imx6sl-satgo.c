@@ -71,6 +71,7 @@ int checkboard(void)
 #include <spl.h>
 #include <linux/libfdt.h>
 #include <asm/arch/mx6-ddr.h>
+#include <hang.h>
 
 #define USDHC_PAD_CTRL (PAD_CTL_PUS_22K_UP |			\
 	PAD_CTL_SPEED_LOW | PAD_CTL_DSE_80ohm |			\
@@ -129,86 +130,109 @@ static void ccgr_init(void)
 	writel(0x00260324, &ccm->cbcmr);
 }
 
-static int issi_dcd_table[] = {
-	0x020c4068, 0xffffffff,
-	0x020c406c, 0xffffffff,
-	0x020c4070, 0xffffffff,
-	0x020c4074, 0xffffffff,
-	0x020c4078, 0xffffffff,
-	0x020c407c, 0xffffffff,
-	0x020c4080, 0xffffffff,
-	0x020c4018, 0x00260324,
-	0x020e05c0, 0x00000000,
-	0x020e05b4, 0x00000000,
-	0x020e0338, 0x00000030,
-	0x020e0300, 0x00000030,
-	0x020e031c, 0x00000030,
-	0x020e0320, 0x00000030,
-	0x020e032c, 0x00000000,
-	0x020e05ac, 0x00000030,
-	0x020e05c8, 0x00000030,
-	0x020e05b0, 0x00000000,
-	0x020e0344, 0x00000030,
-	0x020e0348, 0x00000030,
-	0x020e034c, 0x00000030,
-	0x020e0350, 0x00000030,
-	0x020e05d0, 0x000C0000,
-	0x020e05c4, 0x00000030,
-	0x020e05cc, 0x00000030,
-	0x020e05d4, 0x00000030,
-	0x020e05d8, 0x00000030,
-	0x020e030c, 0x00000030,
-	0x020e0310, 0x00000030,
-	0x020e0314, 0x00000030,
-	0x020e0318, 0x00000030,
-	0x021b0800, 0xa1390003,
-	0x021b080c, 0x00160008,
-	0x021b0810, 0x001F001F,
-	0x021b083c, 0x407E007F,
-	0x021b0840, 0x00690069,
-	0x021b0848, 0x42424645,
-	0x021b0850, 0x3B383630,
-	0x021b081c, 0x33333333,
-	0x021b0820, 0x33333333,
-	0x021b0824, 0x33333333,
-	0x021b08b8, 0x00000800,
-	0x021b0004, 0x00020036,
-	0x021b0008, 0x24444040,
-	0x021b000c, 0x8A8F7925,
-	0x021b0010, 0xFF320E64,
-	0x021b0018, 0x00001740,
-	0x021b001c, 0x00008000,
-	0x021b002c, 0x000026d2,
-	0x021b0030, 0x008F1023,
-	0x021b0040, 0x0000004F,
-	0x021b0000, 0x84180000,
-	0x021b001c, 0x04088032,
-	0x021b001c, 0x00008033,
-	0x021b001c, 0x00048031,
-	0x021b001c, 0x09408030,
-	0x021b001c, 0x04008040,
-	0x021b001c, 0x0408803A,
-	0x021b001c, 0x0000803B,
-	0x021b001c, 0x00048039,
-	0x021b001c, 0x09408038,
-	0x021b001c, 0x04008048,
-	0x021b0020, 0x00005800,
-	0x021b0818, 0x00011117,
-	0x021b0004, 0x00025576,
-	0x021b001c, 0x00000000,
+static struct mx6_ddr3_cfg mem_256M_ddr = {
+	.mem_speed = 800,
+	.density = 2,
+	.width = 16,
+	.banks = 8,
+	.rowaddr = 14,
+	.coladdr = 10,
+	.pagesz = 2,
+	.trcd = 1350,
+	.trcmin = 4950,
+	.trasmin = 3600,
 };
 
-static void ddr_init(int *table, int size)
-{
-	int i;
+static struct mx6_mmdc_calibration mx6_mmcd_calib = {
+	.p0_mpwldectrl0 = 0x00000000,
+	.p0_mpdgctrl0 = 0x407E007F,
+	.p0_mpdgctrl1 = 0x00690069,
+	.p0_mprddlctl = 0x42424645,
+	.p0_mpwrdlctl = 0x3B383630,
+};
 
-	for (i = 0; i < size / 2 ; i++)
-		writel(table[2 * i + 1], table[2 * i]);
-}
+static struct mx6_ddr3_cfg mem_512M_ddr = {
+	.mem_speed = 800,
+	.density = 4,
+	.width = 16,
+	.banks = 8,
+	.rowaddr = 15,
+	.coladdr = 10,
+	.pagesz = 2,
+	.trcd = 1350,
+	.trcmin = 4950,
+	.trasmin = 3600,
+};
+
+/* Common DDR parameters (256MB and 512MB) */
+static struct mx6sl_iomux_grp_regs mx6_grp_ioregs = {
+	.grp_addds = 0x00000030,
+	.grp_ddrmode_ctl = 0x00020000,
+	.grp_b0ds = 0x00000030,
+	.grp_ctlds = 0x00000030,
+	.grp_b1ds = 0x00000030,
+	.grp_ddrpke = 0x00000000,
+	.grp_ddrmode = 0x00020000,
+	.grp_ddr_type = 0x000c0000,
+};
+
+static struct mx6sl_iomux_ddr_regs mx6_ddr_ioregs = {
+	.dram_dqm0 = 0x00000030,
+	.dram_dqm1 = 0x00000030,
+	.dram_ras = 0x00000030,
+	.dram_cas = 0x00000030,
+	.dram_odt0 = 0x00000030,
+	.dram_odt1 = 0x00000030,
+	.dram_sdba2 = 0x00000000,
+	.dram_sdclk_0 = 0x00000030,
+	.dram_sdqs0 = 0x00000030,
+	.dram_sdqs1 = 0x00000030,
+	.dram_reset = 0x00000030,
+};
+
+static struct mx6_ddr_sysinfo ddr_sysinfo = {
+	.dsize = 0,
+	.cs_density = 20,
+	.ncs = 1,
+	.cs1_mirror = 0,
+	.rtt_wr = 2,
+	.rtt_nom = 1,		/* RTT_Nom = RZQ/2 */
+	.walat = 1,		/* Write additional latency */
+	.ralat = 5,		/* Read additional latency */
+	.mif3_mode = 3,	/* Command prediction working mode */
+	.bi_on = 1,		/* Bank interleaving enabled */
+	.sde_to_rst = 0x10,	/* 14 cycles, 200us (JEDEC default) */
+	.rst_to_cke = 0x23,	/* 33 cycles, 500us (JEDEC default) */
+	.ddr_type = DDR_TYPE_DDR3,
+	.refsel = 0,		/* Refresh cycles at 64KHz */
+	.refr = 1,		/* 2 refresh commands per refresh cycle */
+};
 
 static void spl_dram_init(void)
 {
-	ddr_init(issi_dcd_table, ARRAY_SIZE(issi_dcd_table));
+	unsigned int size;
+
+	/* DDR RAM connection is always 16 bit wide. Init the DDR IOs */
+	mx6sl_dram_iocfg(16, &mx6_ddr_ioregs, &mx6_grp_ioregs);
+
+	/* Try to detect the 512MB RAM chip first */
+	mx6_dram_cfg(&ddr_sysinfo, &mx6_mmcd_calib, &mem_512M_ddr);
+
+	/* Get the available RAM size */
+	size = get_ram_size((void *)PHYS_SDRAM, SZ_512M);
+
+	gd->ram_size = size;
+
+	if (size == SZ_512M) {
+		/* 512MB RAM was detected */
+		return;
+	} else if (size == SZ_256M) {
+		/* 256MB RAM was detected, use correct config and calibration */
+		mx6_dram_cfg(&ddr_sysinfo, &mx6_mmcd_calib, &mem_256M_ddr);
+	} else {
+		printf("Invalid DDR RAM size detected: %d MB\n", size / SZ_1M);
+		hang();
+	}
 }
 
 void board_init_f(ulong dummy)
