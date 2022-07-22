@@ -1,0 +1,15 @@
+if TARGET_IMX8MM_LUNA_ONE
+
+config SYS_BOARD
+	default "imx8mm_luna_one"
+
+config SYS_VENDOR
+	default "luna"
+
+config SYS_CONFIG_NAME
+	default "imx8mm_luna_one"
+
+config IMX_CONFIG
+	default "board/luna/imx8mm_luna_one/imximage-8mm-lpddr4.cfg"
+
+endif

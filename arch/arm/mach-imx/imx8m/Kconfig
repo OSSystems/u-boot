@@ -85,6 +85,16 @@ config TARGET_IMX8MM_ICORE_MX8MM
 	  * i.Core MX8M Mini needs to mount on top of this Carrier board
 	    for creating complete i.Core MX8M Mini C.TOUCH 2.0 board.
 
+config TARGET_IMX8MM_LUNA_ONE
+	bool "i.MX8MM Luna One board"
+	select BINMAN
+	select IMX8MM
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+	select FSL_CAAM
+	select ARCH_MISC_INIT
+	select SPL_CRYPTO if SPL
+
 config TARGET_IMX8MM_MX8MENLO
 	bool "Support i.MX8M Mini MX8Menlo board based on Toradex Verdin SoM"
 	select BINMAN
@@ -286,6 +296,7 @@ source "board/gateworks/venice/Kconfig"
 source "board/google/imx8mq_phanbell/Kconfig"
 source "board/kontron/pitx_imx8m/Kconfig"
 source "board/kontron/sl-mx8mm/Kconfig"
+source "board/luna/imx8mm_luna_one/Kconfig"
 source "board/menlo/mx8menlo/Kconfig"
 source "board/phytec/phycore_imx8mm/Kconfig"
 source "board/phytec/phycore_imx8mp/Kconfig"
