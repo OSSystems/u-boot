@@ -1,0 +1,6 @@
+i.MX8MM LUNA ONE BOARD
+M:	Fabio Estevam <festevam@gmail.com>
+S:	Maintained
+F:	board/luna/imx8mm_luna_one/
+F:	include/configs/imx8mm_luna_one.h
+F:	configs/imx8mm_luna_one_defconfig
