@@ -142,12 +142,12 @@ static void __maybe_unused
 usb_power_config_mx6(void *anatop, int anatop_bits_index) { }
 #endif
 
-#if defined(CONFIG_MX7) && !defined(CONFIG_PHY)
+#if (defined(CONFIG_MX7) || defined(CONFIG_IMX8M)) && !defined(CONFIG_PHY)
 static void usb_power_config_mx7(struct usbnc_regs *usbnc)
 {
 	void __iomem *phy_cfg2 = (void __iomem *)(&usbnc->phy_cfg2);
 
-	if (!is_mx7())
+	if (!is_mx7() || !is_imx8mm() || is_imx8mn())
 		return;
 
 	/*
@@ -249,10 +249,10 @@ int usb_phy_mode(int port)
 		return USB_INIT_HOST;
 }
 
-#elif defined(CONFIG_MX7)
+#elif defined(CONFIG_MX7) || defined(CONFIG_IMX8M)
 int usb_phy_mode(int port)
 {
-	struct usbnc_regs *usbnc = (struct usbnc_regs *)(USB_BASE_ADDR +
+	struct usbnc_regs *usbnc = (struct usbnc_regs *)(uintptr_t)(USB_BASE_ADDR +
 			(0x10000 * port) + USBNC_OFFSET);
 	void __iomem *status = (void __iomem *)(&usbnc->phy_status);
 	u32 val;
@@ -347,9 +347,9 @@ int ehci_hcd_init(int index, enum usb_init_type init,
 		(struct anatop_regs __iomem *)ANATOP_BASE_ADDR;
 	struct usbnc_regs *usbnc = (struct usbnc_regs *)(USB_BASE_ADDR +
 			USB_OTHERREGS_OFFSET);
-#elif defined(CONFIG_MX7)
+#elif defined(CONFIG_MX7) || defined(CONFIG_IMX8M)
 	u32 controller_spacing = 0x10000;
-	struct usbnc_regs *usbnc = (struct usbnc_regs *)(USB_BASE_ADDR +
+	struct usbnc_regs *usbnc = (struct usbnc_regs *)(uintptr_t)(USB_BASE_ADDR +
 			(0x10000 * index) + USBNC_OFFSET);
 #elif defined(CONFIG_MX7ULP)
 	u32 controller_spacing = 0x10000;
@@ -358,7 +358,7 @@ int ehci_hcd_init(int index, enum usb_init_type init,
 	struct usbnc_regs *usbnc = (struct usbnc_regs *)(USB_BASE_ADDR +
 			(0x10000 * index) + USBNC_OFFSET);
 #endif
-	struct usb_ehci *ehci = (struct usb_ehci *)(USB_BASE_ADDR +
+	struct usb_ehci *ehci = (struct usb_ehci *)(uintptr_t)(USB_BASE_ADDR +
 		(controller_spacing * index));
 	int ret;
 
@@ -385,13 +385,15 @@ int ehci_hcd_init(int index, enum usb_init_type init,
 
 #if defined(CONFIG_MX6) || defined(CONFIG_IMXRT)
 	usb_power_config_mx6(anatop, index);
-#elif defined (CONFIG_MX7)
+#elif defined (CONFIG_MX7) || defined(CONFIG_IMX8M)
 	usb_power_config_mx7(usbnc);
 #elif defined (CONFIG_MX7ULP)
 	usb_power_config_mx7ulp(usbphy);
 #endif
 
+#if !defined(CONFIG_PHY)
 	usb_oc_config(usbnc, index);
+#endif
 
 #if defined(CONFIG_MX6) || defined(CONFIG_MX7ULP) || defined(CONFIG_IMXRT)
 	if (index < ARRAY_SIZE(phy_bases)) {
