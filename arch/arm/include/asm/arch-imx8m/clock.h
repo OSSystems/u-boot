@@ -258,6 +258,7 @@ int clock_init(void);
 void init_clk_usdhc(u32 index);
 void init_nand_clk(void);
 void init_uart_clk(u32 index);
+void enable_usboh3_clk(unsigned char enable);
 void init_usb_clk(void);
 void init_wdog_clk(void);
 unsigned int mxc_get_clock(enum mxc_clock clk);
