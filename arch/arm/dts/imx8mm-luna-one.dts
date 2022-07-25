@@ -179,6 +179,11 @@
 	status = "okay";
 };
 
+&usbotg1 {
+	dr_mode = "peripheral";
+	status = "okay";
+};
+
 &usdhc2 {
 	assigned-clocks = <&clk IMX8MM_CLK_USDHC2>;
 	assigned-clock-rates = <200000000>;
