@@ -74,6 +74,7 @@
 
 &sec_jr0 {
 	u-boot,dm-spl;
+	status = "disabled";
 };
 
 &sec_jr1 {
