@@ -10,7 +10,7 @@
 #include <linux/stringify.h>
 #include <asm/arch/imx-regs.h>
 
-#define CONFIG_SYS_BOOTM_LEN		(64 * SZ_1M)
+#define CONFIG_SYS_BOOTM_LEN		SZ_256M
 #define CONFIG_SPL_MAX_SIZE		(148 * 1024)
 #define CONFIG_SYS_MONITOR_LEN		SZ_512K
 #define CONFIG_SYS_UBOOT_BASE	\
