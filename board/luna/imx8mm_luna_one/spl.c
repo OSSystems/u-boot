@@ -7,6 +7,7 @@
 #include <command.h>
 #include <cpu_func.h>
 #include <hang.h>
+#include <i2c.h>
 #include <image.h>
 #include <init.h>
 #include <log.h>
@@ -24,6 +25,8 @@
 #include <dm/device.h>
 #include <dm/uclass-internal.h>
 #include <dm/device-internal.h>
+
+#include <power/bd71837.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -71,6 +74,35 @@ int board_fit_config_name_match(const char *name)
 }
 #endif
 
+static int power_init_board(void)
+{
+	struct udevice *bus;
+	struct udevice *dev;
+	int ret;
+
+	ret = uclass_get_device_by_seq(UCLASS_I2C, 0, &bus);
+
+	ret = dm_i2c_probe(bus, 0x4b, 0, &dev);
+	if (ret) {
+		printf("PMIC: failed probe: %d\n", ret);
+		return ret;
+	}
+	puts("PMIC:  BD71847\n");
+
+	/* unlock the PMIC regs */
+	dm_i2c_reg_write(dev, BD718XX_REGLOCK, 0x1);
+	/* increase VDD_0P95 (VDD_GPU/VPU/DRAM) to 0.975V for 1.5GHz DDR */
+	dm_i2c_reg_write(dev, BD718XX_1ST_NODVS_BUCK_VOLT, 0x83);
+	/* increase VDD_SOC to 0.85V before first DRAM access */
+	dm_i2c_reg_write(dev, BD718XX_BUCK1_VOLT_RUN, 0x0f);
+	/* increase VDD_ARM to 0.92V for 800MHz and 1600MHz */
+	dm_i2c_reg_write(dev, BD718XX_BUCK2_VOLT_RUN, 0x16);
+	/* Lock the PMIC regs */
+	dm_i2c_reg_write(dev, BD718XX_REGLOCK, 0x11);
+
+	return 0;
+}
+
 void board_init_f(ulong dummy)
 {
 	struct udevice *dev;
@@ -102,6 +134,8 @@ void board_init_f(ulong dummy)
 	preloader_console_init();
 
 	enable_tzc380();
+
+	power_init_board();
 
 	/* DDR initialization */
 	spl_dram_init();
