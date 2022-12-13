@@ -47,8 +47,6 @@
                                 "rootfstype=ext4 rootwait rw fsck.repair=yes"
 #define UPDATEHUB_BOOTCMD       "bootz ${loadaddr} - ${fdtaddr}"
 
-#include <configs/updatehub-common.h>
-
 #undef CONFIG_EXTRA_ENV_SETTINGS
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"bootscript=echo Running bootscript from mmc0 ...; source ${loadaddr}\0" \
@@ -57,7 +55,7 @@
 	"fdtaddr=0x88000000\0" \
 	"loadaddr=0x82000000\0" \
 	"rdaddr=0x88080000\0" \
-	UPDATEHUB_ENV
+	"bootcmd=ums 0 mmc 0\0"
 #endif
 
 /* NS16550 Configuration */
