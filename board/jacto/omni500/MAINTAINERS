@@ -1,0 +1,8 @@
+Jacto Omni500
+M:	Fabio Estevam <festevam@gmail.com>
+S:	Maintained
+F:	board/jacto/omni500/
+F:	include/configs/omni500.h
+F:	configs/omni500_defconfig
+F:	arch/arm/dts/imx6dl-omni500.dts
+F:	arch/arm/dts/imx6dl-omni500-u-boot.dtsi
