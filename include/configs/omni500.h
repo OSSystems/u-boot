@@ -44,7 +44,8 @@
 
 #define CFG_EXTRA_ENV_SETTINGS \
 	BOOTENV \
-	"boot_file=zImage\0" \
+	"image=zImage\0" \
+	"fdt_file=imx6dl-omni500.dtb\0" \
 	"console=ttymxc0\0" \
 	MEM_LAYOUT_ENV_SETTINGS \
 
