@@ -171,6 +171,15 @@ config TARGET_OMNI500
 	select SUPPORT_SPL
 	imply CMD_DM
 
+config TARGET_OMNI700
+	bool "Jacto Omni700 board"
+	select BOARD_LATE_INIT
+	select DM
+	select DM_SERIAL
+	select DM_THERMAL
+	select SUPPORT_SPL
+	imply CMD_DM
+
 config TARGET_COLIBRI_IMX6ULL
 	bool "Toradex Colibri iMX6ULL"
 	depends on MX6ULL
@@ -724,6 +733,7 @@ source "board/toradex/apalis_imx6/Kconfig"
 source "board/toradex/colibri_imx6/Kconfig"
 source "board/toradex/colibri-imx6ull/Kconfig"
 source "board/jacto/omni500/Kconfig"
+source "board/jacto/omni700/Kconfig"
 source "board/k+p/kp_imx6q_tpc/Kconfig"
 source "board/udoo/Kconfig"
 source "board/udoo/neo/Kconfig"

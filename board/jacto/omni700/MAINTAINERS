@@ -1,0 +1,7 @@
+JACTO DISPLAY700 BOARD
+M:	Fabio Estevam <festevam@gmail.com>
+S:	Maintained
+F:	arch/arm/dts/imx6dl-omni700.dts
+F:	board/jacto/omni700/
+F:	include/configs/omni700.h
+F:	configs/omni700_defconfig
