@@ -47,10 +47,10 @@
 
 #define MEM_LAYOUT_ENV_SETTINGS \
 	"bootm_size=0x10000000\0" \
-	"fdt_addr_r=0x18200000\0" \
+	"fdt_addr_r=0x18000000\0" \
 	"kernel_addr_r=" __stringify(CONFIG_SYS_LOAD_ADDR) "\0" \
 	"pxefile_addr_r=0x18300000\0" \
-	"ramdisk_addr_r=0x18400000\0" \
+	"ramdisk_addr_r=0x13000000\0" \
 	"scriptaddr=0x18280000\0"
 
 #define CFG_EXTRA_ENV_SETTINGS \
