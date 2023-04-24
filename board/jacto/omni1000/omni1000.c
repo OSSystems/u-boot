@@ -95,9 +95,15 @@ static void setup_modem(void)
 static void setup_rs911x(void)
 {
 	gpio_request(RS911X_USB_VBUS, "rs911x_usb_vbus");
-	gpio_direction_output(RS911X_USB_VBUS, 1);
+	gpio_direction_output(RS911X_USB_VBUS, 0);
 
 	gpio_request(RS911X_RESET, "rs911x_reset");
+	gpio_direction_output(RS911X_RESET, 0);
+
+	mdelay(5);
+	gpio_direction_output(RS911X_USB_VBUS, 1);
+
+	mdelay(3);
 	gpio_direction_output(RS911X_RESET, 1);
 }
 
