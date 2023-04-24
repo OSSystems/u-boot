@@ -34,6 +34,17 @@
 
 #include <config_distro_bootcmd.h>
 
+#define CFG_MFG_ENV_SETTINGS                                    \
+	"mfgtool_args=setenv bootargs console=${console},${baudrate} " \
+		"rdinit=/linuxrc " \
+		"g_mass_storage.stall=0 g_mass_storage.removable=1 " \
+		"g_mass_storage.idVendor=0x066F g_mass_storage.idProduct=0x37FF "\
+		"g_mass_storage.iSerialNumber=\"\" "\
+		"clk_ignore_unused "\
+		"\0" \
+	"bootcmd_mfg=run mfgtool_args; bootz ${kernel_addr_r} ${ramdisk_addr_r} ${fdt_addr_r}\0"
+
+
 #define MEM_LAYOUT_ENV_SETTINGS \
 	"bootm_size=0x10000000\0" \
 	"fdt_addr_r=0x18200000\0" \
@@ -47,6 +58,7 @@
 	"image=zImage\0" \
 	"fdt_file=imx6dl-omni500.dtb\0" \
 	"console=ttymxc0\0" \
+	CFG_MFG_ENV_SETTINGS \
 	MEM_LAYOUT_ENV_SETTINGS \
 
 /* Miscellaneous configurable options */
