@@ -12,6 +12,7 @@
 #include <asm/io.h>
 #include <common.h>
 #include <env.h>
+#include <env_internal.h>
 #include <linux/delay.h>
 #include <linux/math64.h>
 #include <net.h>
@@ -212,4 +213,12 @@ int board_late_init(void)
 	eth_env_set_enetaddr("ethaddr", mac);
 
 	return 0;
+}
+
+enum env_location env_get_location(enum env_operation op, int prio)
+{
+	if (is_boot_from_usb())
+		return ENVL_NOWHERE;
+
+	return ENVL_MMC;
 }
