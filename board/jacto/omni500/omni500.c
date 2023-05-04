@@ -10,6 +10,7 @@
 #include <cpu_func.h>
 #include <dm.h>
 #include <env.h>
+#include <env_internal.h>
 #include <init.h>
 #include <net.h>
 #include <asm/global_data.h>
@@ -567,6 +568,11 @@ int board_init(void)
 #ifdef CONFIG_BOARD_LATE_INIT
 int board_late_init(void)
 {
+	if (is_boot_from_usb()) {
+		env_set("bootcmd", "run bootcmd_mfg");
+		env_set("bootdelay", "0");
+	}
+
 	return 0;
 }
 #endif /* CONFIG_BOARD_LATE_INIT */
@@ -611,6 +617,17 @@ void ldo_mode_set(int ldo_bypass)
 	return;
 }
 #endif
+
+enum env_location env_get_location(enum env_operation op, int prio)
+{
+	if (prio)
+		return ENVL_UNKNOWN;
+
+	if (is_boot_from_usb())
+		return ENVL_NOWHERE;
+
+	return ENVL_MMC;
+}
 
 #ifdef CONFIG_SPL_BUILD
 #include <spl.h>
