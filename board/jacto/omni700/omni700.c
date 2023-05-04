@@ -212,11 +212,19 @@ int board_late_init(void)
 
 	eth_env_set_enetaddr("ethaddr", mac);
 
+	if (is_boot_from_usb()) {
+		env_set("bootcmd", "run bootcmd_mfg");
+		env_set("bootdelay", "0");
+	}
+
 	return 0;
 }
 
 enum env_location env_get_location(enum env_operation op, int prio)
 {
+	if (prio)
+		return ENVL_UNKNOWN;
+
 	if (is_boot_from_usb())
 		return ENVL_NOWHERE;
 
