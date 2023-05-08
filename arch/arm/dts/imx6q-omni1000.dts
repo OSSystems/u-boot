@@ -1,0 +1,46 @@
+// SPDX-License-Identifier: GPL-2.0+ OR MIT
+//
+// Copyright 2014-2020 Toradex
+// Copyright 2012 Freescale Semiconductor, Inc.
+// Copyright 2011 Linaro Ltd.
+
+/dts-v1/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+#include "imx6q.dtsi"
+#include "imx6qdl-apalis.dtsi"
+
+/ {
+	model = "Toradex Apalis iMX6Q/D Module on Jacto Omni1000 Board";
+	compatible = "jacto,imx6q-omni1000", "toradex,apalis_imx6q", "fsl,imx6q";
+};
+
+&usbotg {
+	status = "okay";
+};
+
+&usdhc2 {
+	status = "disabled";
+};
+
+&iomuxc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hog>;
+
+	pinctrl_hog: hoggrp {
+		fsl,pins = <
+			MX6QDL_PAD_EIM_A20__GPIO2_IO18  0x130b0
+			MX6QDL_PAD_EIM_DA5__GPIO3_IO05  0x130b0
+			MX6QDL_PAD_EIM_DA4__GPIO3_IO04  0x130b0
+			MX6QDL_PAD_EIM_DA3__GPIO3_IO03  0x1b0b0
+			MX6QDL_PAD_EIM_DA2__GPIO3_IO02  0x1b0b0
+			MX6QDL_PAD_NANDF_D4__GPIO2_IO04 0x130b0
+			MX6QDL_PAD_NANDF_D5__GPIO2_IO05 0x130b0
+			MX6QDL_PAD_NANDF_D6__GPIO2_IO06 0x130b0
+			MX6QDL_PAD_NANDF_RB0__GPIO6_IO10 0x130b0
+			MX6QDL_PAD_EIM_DA11__GPIO3_IO11 0x130b0
+		>;
+	};
+};
