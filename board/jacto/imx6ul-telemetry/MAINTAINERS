@@ -1,0 +1,8 @@
+IMX6ULTELEMETRY BOARD
+M:	Fabio Estevam <festevam@gmail.com>
+M:	Otavio Salvador <otavio@ossystems.com.br>
+S:	Maintained
+F:	board/jacto/imx6ul-telemetry/
+F:	include/configs/imx6ul-telemetry.h
+F:	configs/imx6ul-telemetry_defconfig
+

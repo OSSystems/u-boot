@@ -910,6 +910,7 @@ dtb-$(CONFIG_MX6UL) += \
 	imx6ul-pico-hobbit.dtb \
 	imx6ul-pico-pi.dtb \
 	imx6ul-kontron-bl.dtb \
+	imx6ul-telemetry-r1.dtb \
 	imx6ull-kontron-bl.dtb
 
 dtb-$(CONFIG_MX6ULL) += \

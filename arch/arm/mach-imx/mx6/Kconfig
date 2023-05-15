@@ -268,6 +268,14 @@ config TARGET_KONTRON_MX6UL
 	select SUPPORT_SPL
 	imply CMD_DM
 
+config TARGET_IMX6UL_TELEMETRY
+	bool "Jacto imx6ul-telemetry"
+	depends on MX6UL
+	select DM
+	select DM_THERMAL
+	select SUPPORT_SPL
+	imply CMD_DM
+
 config TARGET_KOSAGI_NOVENA
 	bool "Kosagi Novena"
 	select BOARD_LATE_INIT
@@ -728,6 +736,7 @@ source "board/phytec/pcm058/Kconfig"
 source "board/phytec/pcl063/Kconfig"
 source "board/gateworks/gw_ventana/Kconfig"
 source "board/kontron/sl-mx6ul/Kconfig"
+source "board/jacto/imx6ul-telemetry/Kconfig"
 source "board/kosagi/novena/Kconfig"
 source "board/softing/vining_2000/Kconfig"
 source "board/liebherr/display5/Kconfig"
