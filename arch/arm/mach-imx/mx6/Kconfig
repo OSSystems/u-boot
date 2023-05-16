@@ -496,6 +496,14 @@ config TARGET_MX6ULL_14X14_EVK
 	select IOMUX_LPSR
 	imply CMD_DM
 
+config TARGET_GEODATA
+	bool "Jacto i.MX6ULL Geodata board"
+	depends on MX6ULL
+	select DM
+	select DM_THERMAL
+	select IOMUX_LPSR
+	imply CMD_DM
+
 config TARGET_MX6ULZ_SMM_M2
 	bool "Support imx6ulz_smm_m2"
 	depends on MX6ULL
@@ -751,6 +759,7 @@ source "board/tq/tqma6/Kconfig"
 source "board/toradex/apalis_imx6/Kconfig"
 source "board/toradex/colibri_imx6/Kconfig"
 source "board/toradex/colibri-imx6ull/Kconfig"
+source "board/jacto/geodata/Kconfig"
 source "board/jacto/omni1000/Kconfig"
 source "board/jacto/omni500/Kconfig"
 source "board/jacto/omni700/Kconfig"

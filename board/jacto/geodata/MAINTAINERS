@@ -1,0 +1,7 @@
+Jacto i.MX6ULL Geodata Board
+M:	Fabio Estevam <festevam@gmail.com>
+S:	Maintained
+F:	board/jacto/geodata/
+F:	include/configs/geodata.h
+F:	configs/geodata_defconfig
+F:	arch/arm/dts/imx6ull-geodata.dts
