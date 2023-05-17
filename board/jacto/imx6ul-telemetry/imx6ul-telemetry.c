@@ -17,6 +17,7 @@
 #include <asm/io.h>
 #include <common.h>
 #include <env.h>
+#include <env_internal.h>
 #include <fsl_esdhc_imx.h>
 #include <linux/sizes.h>
 #include <mmc.h>
@@ -232,6 +233,29 @@ int board_init(void)
 #endif
 #endif
 	return 0;
+}
+
+#ifdef CONFIG_BOARD_LATE_INIT
+int board_late_init(void)
+{
+	if (is_boot_from_usb()) {
+		env_set("bootcmd", "run bootcmd_mfg");
+		env_set("bootdelay", "0");
+	}
+
+	return 0;
+}
+#endif /* CONFIG_BOARD_LATE_INIT */
+
+enum env_location env_get_location(enum env_operation op, int prio)
+{
+	if (prio)
+		return ENVL_UNKNOWN;
+
+	if (is_boot_from_usb())
+		return ENVL_NOWHERE;
+
+	return ENVL_MMC;
 }
 
 #ifdef CONFIG_SPL_BUILD
