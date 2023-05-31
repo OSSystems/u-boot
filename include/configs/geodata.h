@@ -32,13 +32,10 @@
 	"fdt_addr_r=0x83000000\0" \
 	"fdt_addr=0x83000000\0" \
 	"image=zImage\0" \
-	"mmcdev=" __stringify(CFG_SYS_MMC_ENV_DEV) "\0" \
-	"mmcpart=" __stringify(CFG_SYS_MMC_IMG_LOAD_PART) "\0" \
-	"kernel_addr_r=" __stringify(CONFIG_LOADADDR) "\0" \
-	"pxefile_addr_r=" __stringify(CONFIG_LOADADDR) "\0" \
+	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
+	"mmcpart=" __stringify(CONFIG_SYS_MMC_ENV_PART) "\0" \
 	"ramdisk_addr_r=0x83800000\0" \
 	"ramdiskaddr=0x83800000\0" \
-	"scriptaddr=" __stringify(CONFIG_LOADADDR) "\0" \
 	"loadbootscript=" \
 		"load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};\0" \
 	"bootscript=echo Running bootscript from mmc ...; " \
@@ -52,10 +49,6 @@
 #define CFG_SYS_SDRAM_BASE		PHYS_SDRAM
 #define CFG_SYS_INIT_RAM_ADDR	IRAM_BASE_ADDR
 #define CFG_SYS_INIT_RAM_SIZE	IRAM_SIZE
-
-/* environment organization */
-#define CFG_SYS_MMC_ENV_DEV		1	/* USDHC2 */
-#define CFG_SYS_MMC_IMG_LOAD_PART	1
 
 #define CFG_MXC_USB_PORTSC		(PORT_PTS_UTMI | PORT_PTS_PTW)
 
