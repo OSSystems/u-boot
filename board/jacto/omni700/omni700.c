@@ -201,7 +201,7 @@ int board_late_init(void)
 	cfg0 = readl(OCOTP_BASE_ADDR + 0x410);
 	cfg1 = readl(OCOTP_BASE_ADDR + 0x420);
 
-	div_u64_rem((u64)cfg0 + (u64)cfg1, 10000000, &remainder);
+	div_u64_rem((u64)cfg0 + (u64)cfg1, 0xffffff, &remainder);
 
 	mac[0] = 0x00;
 	mac[1] = (unsigned char)cfg0;
