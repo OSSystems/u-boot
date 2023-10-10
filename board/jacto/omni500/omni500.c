@@ -34,6 +34,7 @@
 #include <fsl_esdhc_imx.h>
 #include <imx_thermal.h>
 #include <cpu.h>
+#include "../../toradex/common/tdx-common.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 

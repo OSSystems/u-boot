@@ -15,4 +15,22 @@ config SYS_SOC
 config SYS_VENDOR
 	default "jacto"
 
+config TDX_CFG_BLOCK
+	default y
+
+config TDX_HAVE_MMC
+	default y
+
+config TDX_CFG_BLOCK_DEV
+	default "0"
+
+config TDX_CFG_BLOCK_PART
+	default "1"
+
+# Toradex config block in eMMC, at the end of 1st "boot sector"
+config TDX_CFG_BLOCK_OFFSET
+	default "-512"
+
+source "board/toradex/common/Kconfig"
+
 endif
