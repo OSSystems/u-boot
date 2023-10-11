@@ -10,5 +10,4 @@ obj- := __dummy__.o
 else
 obj-$(CONFIG_TDX_CFG_BLOCK) += ../../toradex/common/tdx-cfg-block.o
 obj-y += ../../toradex/common/tdx-common.o
-obj-y += ../../toradex/common/tdx-eeprom.o
 endif
