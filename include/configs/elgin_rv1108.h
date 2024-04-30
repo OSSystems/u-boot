@@ -31,8 +31,15 @@
 #undef CONFIG_EXTRA_ENV_SETTINGS
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	ENV_MEM_LAYOUT_SETTINGS \
-	"fdtfile=" CONFIG_DEFAULT_FDT_FILE "\0" \
 	"partitions=" PARTS_DEFAULT \
+	"fdtfile=undefined\0" \
+	"findfdt="\
+		"if test $board_rev = R1 ; then " \
+			"setenv fdtfile rv1108-elgin-r1.dtb; fi; " \
+		"if test $board_rev = R2 ; then " \
+			"setenv fdtfile rv1108-elgin-r2.dtb; fi; " \
+		"if test $fdtfile = undefined; then " \
+			"echo WARNING: Could not determine dtb to use; fi; \0" \
 	UPDATEHUB_ENV
 
 #endif

@@ -5,6 +5,7 @@
  */
 
 #include <common.h>
+#include <env.h>
 #include <init.h>
 #include <syscon.h>
 #include <asm/io.h>
@@ -53,32 +54,48 @@ int board_early_init_f(void)
 #define MAXIM_RESET_GPIO	117
 #define VER0_GPIO		116  /* GPIO3_C4 = 3 * 32 + 20 = 116 */
 #define VER1_GPIO		115  /* GPIO3_C3 = 3 * 32 + 19 = 115 */
+#define VER2_GPIO		111  /* GPIO3_B7 = 3 * 32 + 15 = 111 */
 #define WIFI_DET_GPIO		119  /* GPIO3_C7 = 3 * 32 + 23 = 119 */
+
+static bool is_rev2(void)
+{
+	/* Revision R2 has VER2 connected to GND */
+	gpio_request(VER2_GPIO, "ver2_gpio");
+	gpio_direction_input(VER2_GPIO);
+
+	return !gpio_get_value(VER2_GPIO);
+}
 
 int rk_board_late_init(void)
 {
 	char *version, *wifi;
 
-	gpio_request(LCD_BACKLIGHT_GPIO, "lcd_backlight");
-	gpio_direction_output(LCD_BACKLIGHT_GPIO, 1);
+	if (is_rev2()) {
+		version = "R2";
+		env_set("board_rev", "R2");
+	} else {
+		gpio_request(LCD_BACKLIGHT_GPIO, "lcd_backlight");
+		gpio_direction_output(LCD_BACKLIGHT_GPIO, 1);
 
-	gpio_request(MODEM_ENABLE_GPIO, "modem_enable");
-	gpio_direction_output(MODEM_ENABLE_GPIO, 0);
+		gpio_free(VER2_GPIO);
+		gpio_request(MODEM_ENABLE_GPIO, "modem_enable");
+		gpio_direction_output(MODEM_ENABLE_GPIO, 0);
 	
-	gpio_request(MAXIM_RESET_GPIO, "maxim_reset");
-	gpio_direction_output(MAXIM_RESET_GPIO, 1);
+		gpio_request(MAXIM_RESET_GPIO, "maxim_reset");
+		gpio_direction_output(MAXIM_RESET_GPIO, 1);
 
-	gpio_request(VER0_GPIO, "ver0_gpio");
-	gpio_direction_input(VER0_GPIO);
+		gpio_request(VER0_GPIO, "ver0_gpio");
+		gpio_direction_input(VER0_GPIO);
+
+		if (gpio_get_value(VER0_GPIO))
+			version = "1B";
+		else
+			version = "1D";
+		env_set("board_rev", "R1");
+	}
 
 	gpio_request(WIFI_DET_GPIO, "wifi_det_gpio");
 	gpio_direction_input(WIFI_DET_GPIO);
-
-	if (gpio_get_value(VER0_GPIO))
-		version = "1B";
-	else
-		version = "1D";
-
 	if (gpio_get_value(WIFI_DET_GPIO))
 		wifi = "WiFi";
 	else
