@@ -72,7 +72,7 @@ int rk_board_late_init(void)
 
 	if (is_rev2()) {
 		version = "R2";
-		env_set("board_rev", "R2");
+		env_set("fdtfile", "rv1108-elgin-r2.dtb");
 	} else {
 		gpio_request(LCD_BACKLIGHT_GPIO, "lcd_backlight");
 		gpio_direction_output(LCD_BACKLIGHT_GPIO, 1);
@@ -91,7 +91,7 @@ int rk_board_late_init(void)
 			version = "1B";
 		else
 			version = "1D";
-		env_set("board_rev", "R1");
+		env_set("fdtfile", "rv1108-elgin-r1.dtb");
 	}
 
 	gpio_request(WIFI_DET_GPIO, "wifi_det_gpio");
