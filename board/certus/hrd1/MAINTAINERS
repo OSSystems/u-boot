@@ -1,0 +1,6 @@
+CERTUS HRD!
+M:	Fabio Estevam <festevam@gmail.com>
+S:	Maintained
+F:	board/certus/hrd1/
+F:	include/configs/hrd1.h
+F:	configs/hrd1_defconfig

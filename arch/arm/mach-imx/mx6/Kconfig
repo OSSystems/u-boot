@@ -232,6 +232,14 @@ config TARGET_GW_VENTANA
 	imply CMD_SATA
 	imply CMD_SPL
 
+config TARGET_HRD1
+	bool "Certus HRD1"
+	depends on MX6DL
+	select BOARD_EARLY_INIT_F
+	select DM
+	select DM_THERMAL
+	imply CMD_DM
+
 config TARGET_KONTRON_MX6UL
 	bool "Kontron Electronics SL/BL i.MX6UL/ULL (N63xx/N64xx)"
 	depends on MX6UL
@@ -708,6 +716,7 @@ source "board/bsh/imx6ulz_smm_m2/Kconfig"
 source "board/bticino/mamoj/Kconfig"
 source "board/compulab/cm_fx6/Kconfig"
 source "board/comvetia/lxr2/Kconfig"
+source "board/certus/hrd1/Kconfig"
 source "board/dhelectronics/dh_imx6/Kconfig"
 source "board/embest/mx6boards/Kconfig"
 source "board/engicam/imx6q/Kconfig"

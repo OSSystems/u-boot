@@ -1,0 +1,12 @@
+if TARGET_HRD1
+
+config SYS_BOARD
+	default "hrd1"
+
+config SYS_VENDOR
+	default "certus"
+
+config SYS_CONFIG_NAME
+	default "hrd1"
+
+endif
