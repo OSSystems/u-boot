@@ -9,6 +9,7 @@
 #include <asm/arch/iomux.h>
 #include <asm/arch/mx6-pins.h>
 #include <asm/mach-imx/iomux-v3.h>
+#include <asm/mach-imx/video.h>
 
 #include <asm/mach-imx/spi.h>
 #include <linux/errno.h>
@@ -28,6 +29,8 @@
 #include <mmc.h>
 
 DECLARE_GLOBAL_DATA_PTR;
+
+#define DISP0_PWR_EN	IMX_GPIO_NR(1, 21)
 
 #define UART_PAD_CTRL  (PAD_CTL_PUS_100K_UP |			\
 	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm |			\
@@ -153,6 +156,107 @@ int board_spi_cs_gpio(unsigned bus, unsigned cs)
 	return (bus == 0 && cs == 0) ? (IMX_GPIO_NR(3, 19)) : -EINVAL;
 }
 
+static iomux_v3_cfg_t const bl_pads[] = {
+	MX6_PAD_SD1_DAT3__GPIO1_IO21 | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
+
+#if defined(CONFIG_VIDEO_IPUV3)
+static void enable_backlight(void)
+{
+	imx_iomux_v3_setup_multiple_pads(bl_pads, ARRAY_SIZE(bl_pads));
+	gpio_request(DISP0_PWR_EN, "Display Power Enable");
+	gpio_direction_output(DISP0_PWR_EN, 1);
+}
+
+static void enable_lvds(struct display_info_t const *dev)
+{
+	enable_backlight();
+}
+
+struct display_info_t const displays[] = {{
+	.bus	= -1,
+	.addr	= 0,
+	.pixfmt	= IPU_PIX_FMT_RGB666,
+	.detect	= NULL,
+	.enable	= enable_lvds,
+	.mode	= {
+		.name           = "Hannstar-XGA",
+		.refresh        = 60,
+		.xres           = 1024,
+		.yres           = 768,
+		.pixclock       = 15384,
+		.left_margin    = 160,
+		.right_margin   = 24,
+		.upper_margin   = 29,
+		.lower_margin   = 3,
+		.hsync_len      = 136,
+		.vsync_len      = 6,
+		.sync           = FB_SYNC_EXT,
+		.vmode          = FB_VMODE_NONINTERLACED
+} } };
+size_t display_count = ARRAY_SIZE(displays);
+
+/*
+ * Do not overwrite the console
+ * Use always serial for U-Boot console
+ */
+int overwrite_console(void)
+{
+	return 1;
+}
+
+static void setup_display(void)
+{
+	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
+	struct iomuxc *iomux = (struct iomuxc *)IOMUXC_BASE_ADDR;
+	int reg;
+
+	enable_ipu_clock();
+
+	/* Turn on LDB0, LDB1, IPU,IPU DI0 clocks */
+	reg = readl(&mxc_ccm->CCGR3);
+	reg |=  MXC_CCM_CCGR3_LDB_DI0_MASK | MXC_CCM_CCGR3_LDB_DI1_MASK;
+	writel(reg, &mxc_ccm->CCGR3);
+
+	/* set LDB0, LDB1 clk select to 011/011 */
+	reg = readl(&mxc_ccm->cs2cdr);
+	reg &= ~(MXC_CCM_CS2CDR_LDB_DI0_CLK_SEL_MASK
+		 | MXC_CCM_CS2CDR_LDB_DI1_CLK_SEL_MASK);
+	reg |= (3 << MXC_CCM_CS2CDR_LDB_DI0_CLK_SEL_OFFSET)
+	      | (3 << MXC_CCM_CS2CDR_LDB_DI1_CLK_SEL_OFFSET);
+	writel(reg, &mxc_ccm->cs2cdr);
+
+	reg = readl(&mxc_ccm->cscmr2);
+	reg |= MXC_CCM_CSCMR2_LDB_DI0_IPU_DIV | MXC_CCM_CSCMR2_LDB_DI1_IPU_DIV;
+	writel(reg, &mxc_ccm->cscmr2);
+
+	reg = readl(&mxc_ccm->chsccdr);
+	reg |= (CHSCCDR_CLK_SEL_LDB_DI0
+		<< MXC_CCM_CHSCCDR_IPU1_DI0_CLK_SEL_OFFSET);
+	reg |= (CHSCCDR_CLK_SEL_LDB_DI0
+		<< MXC_CCM_CHSCCDR_IPU1_DI1_CLK_SEL_OFFSET);
+	writel(reg, &mxc_ccm->chsccdr);
+
+	reg = IOMUXC_GPR2_BGREF_RRMODE_EXTERNAL_RES
+	     | IOMUXC_GPR2_DI1_VS_POLARITY_ACTIVE_LOW
+	     | IOMUXC_GPR2_DI0_VS_POLARITY_ACTIVE_LOW
+	     | IOMUXC_GPR2_BIT_MAPPING_CH1_SPWG
+	     | IOMUXC_GPR2_DATA_WIDTH_CH1_24BIT
+	     | IOMUXC_GPR2_BIT_MAPPING_CH0_SPWG
+	     | IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT
+	     | IOMUXC_GPR2_LVDS_CH0_MODE_DISABLED
+	     | IOMUXC_GPR2_LVDS_CH1_MODE_ENABLED_DI0;
+	writel(reg, &iomux->gpr[2]);
+
+	reg = readl(&iomux->gpr[3]);
+	reg = (reg & ~(IOMUXC_GPR3_LVDS1_MUX_CTL_MASK
+			| IOMUXC_GPR3_HDMI_MUX_CTL_MASK))
+	    | (IOMUXC_GPR3_MUX_SRC_IPU1_DI0
+	       << IOMUXC_GPR3_LVDS1_MUX_CTL_OFFSET);
+	writel(reg, &iomux->gpr[3]);
+}
+#endif /* CONFIG_VIDEO_IPUV3 */
+
 int board_early_init_f(void)
 {
 	setup_iomux_uart();
@@ -166,6 +270,10 @@ int board_init(void)
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
 
 	setup_spi();
+
+#if defined(CONFIG_VIDEO_IPUV3)
+	setup_display();
+#endif
 
 	return 0;
 }
