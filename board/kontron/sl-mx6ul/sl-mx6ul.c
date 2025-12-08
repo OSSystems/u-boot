@@ -8,6 +8,7 @@
 #include <asm/global_data.h>
 #include <env_internal.h>
 #include <fdt_support.h>
+#include <net-common.h>
 #include <netdev.h>
 #include <phy.h>
 #include <stdlib.h>
@@ -136,4 +137,31 @@ enum env_location env_get_location(enum env_operation op, int prio)
 		return ENVL_MMC;
 
 	return ENVL_NOWHERE;
+}
+
+int board_late_init(void)
+{
+	unsigned char mac[6];
+	u32 value;
+
+	value = readl(OCOTP_BASE_ADDR + 0x640);
+
+	mac[0] = value >> 24;
+	mac[1] = value >> 16;
+	mac[2] = value >> 8;
+	mac[3] = value;
+
+	value = readl(OCOTP_BASE_ADDR + 0x630);
+	mac[4] = value >> 24;
+	mac[5] = value >> 16;
+
+	if (!is_valid_ethaddr(mac)) {
+		printf("Invalid MAC address for FEC2 set in OTP fuses!\n");
+		return -EINVAL;
+	}
+
+	if (!env_get("eth1addr"))
+		eth_env_set_enetaddr("eth1addr", mac);
+
+	return 0;
 }
