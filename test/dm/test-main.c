@@ -45,15 +45,13 @@ static int dm_test_init(struct unit_test_state *uts, bool of_live)
 static int do_autoprobe(struct unit_test_state *uts)
 {
 	struct udevice *dev;
-	int ret;
 
 	/* Scanning the uclass is enough to probe all the devices */
-	for (ret = uclass_first_device(UCLASS_TEST, &dev);
-	     dev;
-	     ret = uclass_next_device(&dev))
+	for (uclass_first_device(UCLASS_TEST, &dev); dev;
+	     uclass_next_device(&dev))
 		;
 
-	return ret;
+	return 0;
 }
 
 static int dm_test_destroy(struct unit_test_state *uts)
@@ -92,7 +90,7 @@ static int dm_do_test(struct unit_test_state *uts, struct unit_test *test,
 	if (test->flags & DM_TESTF_PROBE_TEST)
 		ut_assertok(do_autoprobe(uts));
 	if (test->flags & DM_TESTF_SCAN_FDT)
-		ut_assertok(dm_scan_fdt(gd->fdt_blob, false));
+		ut_assertok(dm_extended_scan_fdt(gd->fdt_blob, false));
 
 	/*
 	 * Silence the console and rely on console reocrding to get

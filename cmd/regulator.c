@@ -71,7 +71,7 @@ static int curr_dev_and_platdata(struct udevice **devp,
 
 	*uc_pdata = dev_get_uclass_platdata(*devp);
 	if (!*uc_pdata) {
-		error("Regulator: %s - missing platform data!", currdev->name);
+		pr_err("Regulator: %s - missing platform data!", currdev->name);
 		return CMD_RET_FAILURE;
 	}
 
@@ -249,8 +249,8 @@ static int do_status(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	/* Show all of them in a list, probing them as needed */
 	printf("%-20s %-10s %10s %10s %-10s\n", "Name", "Enabled", "uV", "mA",
 	       "Mode");
-	for (ret = uclass_first_device(UCLASS_REGULATOR, &dev); dev;
-	     ret = uclass_next_device(&dev))
+	for (uclass_first_device(UCLASS_REGULATOR, &dev); dev;
+	     uclass_next_device(&dev))
 		do_status_line(dev);
 
 	return CMD_RET_SUCCESS;

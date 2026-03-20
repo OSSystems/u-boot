@@ -18,7 +18,7 @@ arch-$(CONFIG_CPU_ARM1136)	=-march=armv5
 arch-$(CONFIG_CPU_ARM1176)	=-march=armv5t
 arch-$(CONFIG_CPU_V7)		=$(call cc-option, -march=armv7-a, \
 				 $(call cc-option, -march=armv7, -march=armv5))
-arch-$(CONFIG_ARM64)		=-march=armv8-a
+arch-$(CONFIG_ARM64)		=-march=armv8-a+nosimd
 
 # On Tegra systems we must build SPL for the armv4 core on the device
 # but otherwise we can use the value in CONFIG_SYS_ARM_ARCH
@@ -53,6 +53,7 @@ PLATFORM_CPPFLAGS += $(arch-y) $(tune-y)
 machine-$(CONFIG_ARCH_ASPEED)		+= aspeed
 machine-$(CONFIG_ARCH_AT91)		+= at91
 machine-$(CONFIG_ARCH_BCM283X)		+= bcm283x
+machine-$(CONFIG_ARCH_BCMSTB)		+= bcmstb
 machine-$(CONFIG_ARCH_DAVINCI)		+= davinci
 machine-$(CONFIG_ARCH_EXYNOS)		+= exynos
 machine-$(CONFIG_ARCH_HIGHBANK)		+= highbank

@@ -7,11 +7,18 @@
 
 #include <common.h>
 #include <dm.h>
+#include <mapmem.h>
+#include <asm/io.h>
 #include <dm/of_access.h>
 
 int dev_read_u32_default(struct udevice *dev, const char *propname, int def)
 {
 	return ofnode_read_u32_default(dev_ofnode(dev), propname, def);
+}
+
+int dev_read_s32_default(struct udevice *dev, const char *propname, int def)
+{
+	return ofnode_read_s32_default(dev_ofnode(dev), propname, def);
 }
 
 const char *dev_read_string(struct udevice *dev, const char *propname)
@@ -57,6 +64,23 @@ fdt_addr_t dev_read_addr(struct udevice *dev)
 	return dev_read_addr_index(dev, 0);
 }
 
+void *dev_remap_addr_index(struct udevice *dev, int index)
+{
+        fdt_addr_t addr = dev_read_addr_index(dev, index);
+
+        if (addr == FDT_ADDR_T_NONE)
+                return NULL;
+
+        return map_physmem(addr, 0, MAP_NOCACHE);
+}
+
+void *dev_read_addr_ptr(struct udevice *dev)
+{
+	fdt_addr_t addr = dev_read_addr(dev);
+
+	return (addr == FDT_ADDR_T_NONE) ? NULL : map_sysmem(addr, 0);
+}
+
 fdt_addr_t dev_read_addr_size(struct udevice *dev, const char *property,
 				fdt_size_t *sizep)
 {
@@ -65,6 +89,9 @@ fdt_addr_t dev_read_addr_size(struct udevice *dev, const char *property,
 
 const char *dev_read_name(struct udevice *dev)
 {
+	if (!dev_of_valid(dev))
+		return NULL;
+
 	return ofnode_get_name(dev_ofnode(dev));
 }
 
@@ -72,6 +99,17 @@ int dev_read_stringlist_search(struct udevice *dev, const char *property,
 			  const char *string)
 {
 	return ofnode_stringlist_search(dev_ofnode(dev), property, string);
+}
+
+int dev_read_string_index(struct udevice *dev, const char *propname, int index,
+			  const char **outp)
+{
+	return ofnode_read_string_index(dev_ofnode(dev), propname, index, outp);
+}
+
+int dev_read_string_count(struct udevice *dev, const char *propname)
+{
+	return ofnode_read_string_count(dev_ofnode(dev), propname);
 }
 
 int dev_read_phandle_with_args(struct udevice *dev, const char *list_name,
@@ -83,6 +121,14 @@ int dev_read_phandle_with_args(struct udevice *dev, const char *list_name,
 					      cells_name, cell_count, index,
 					      out_args);
 }
+
+int dev_count_phandle_with_args(struct udevice *dev,
+		const char *list_name, const char *cells_name)
+{
+	return ofnode_count_phandle_with_args(dev_ofnode(dev), list_name,
+					      cells_name);
+}
+
 
 int dev_read_addr_cells(struct udevice *dev)
 {
@@ -119,6 +165,22 @@ const void *dev_read_prop(struct udevice *dev, const char *propname, int *lenp)
 	return ofnode_get_property(dev_ofnode(dev), propname, lenp);
 }
 
+int dev_read_first_prop(struct udevice *dev, struct ofprop *prop)
+{
+	return ofnode_get_first_property(dev_ofnode(dev), prop);
+}
+
+int dev_read_next_prop(struct ofprop *prop)
+{
+	return ofnode_get_next_property(prop);
+}
+
+const void *dev_read_prop_by_prop(struct ofprop *prop,
+				  const char **propname, int *lenp)
+{
+	return ofnode_get_property_by_prop(prop, propname, lenp);
+}
+
 int dev_read_alias_seq(struct udevice *dev, int *devnump)
 {
 	ofnode node = dev_ofnode(dev);
@@ -140,7 +202,17 @@ int dev_read_alias_seq(struct udevice *dev, int *devnump)
 int dev_read_u32_array(struct udevice *dev, const char *propname,
 		       u32 *out_values, size_t sz)
 {
+	if (!dev_of_valid(dev))
+		return -EINVAL;
 	return ofnode_read_u32_array(dev_ofnode(dev), propname, out_values, sz);
+}
+
+int dev_write_u32_array(struct udevice *dev, const char *propname,
+			u32 *values, size_t sz)
+{
+	if (!dev_of_valid(dev))
+		return -EINVAL;
+	return ofnode_write_u32_array(dev_ofnode(dev), propname, values, sz);
 }
 
 const uint8_t *dev_read_u8_array_ptr(struct udevice *dev, const char *propname,
@@ -169,4 +241,9 @@ int dev_read_resource_byname(struct udevice *dev, const char *name,
 			     struct resource *res)
 {
 	return ofnode_read_resource_byname(dev_ofnode(dev), name, res);
+}
+
+u64 dev_translate_address(struct udevice *dev, const fdt32_t *in_addr)
+{
+	return ofnode_translate_address(dev_ofnode(dev), in_addr);
 }

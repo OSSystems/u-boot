@@ -30,11 +30,16 @@ _start:
 	b	reset
 #endif
 
+#if !CONFIG_IS_ENABLED(TINY_FRAMEWORK)
 	.align 3
 
 .globl	_TEXT_BASE
 _TEXT_BASE:
+#if defined(CONFIG_SPL_BUILD)
+	.quad   CONFIG_SPL_TEXT_BASE
+#else
 	.quad	CONFIG_SYS_TEXT_BASE
+#endif
 
 /*
  * These are defined in the linker script.
@@ -56,6 +61,32 @@ reset:
 	b	save_boot_params
 .globl	save_boot_params_ret
 save_boot_params_ret:
+
+#if CONFIG_POSITION_INDEPENDENT
+	/*
+	 * Fix .rela.dyn relocations. This allows U-Boot to be loaded to and
+	 * executed at a different address than it was linked at.
+	 */
+pie_fixup:
+	adr	x0, _start		/* x0 <- Runtime value of _start */
+	ldr	x1, _TEXT_BASE		/* x1 <- Linked value of _start */
+	sub	x9, x0, x1		/* x9 <- Run-vs-link offset */
+	adr	x2, __rel_dyn_start	/* x2 <- Runtime &__rel_dyn_start */
+	adr	x3, __rel_dyn_end	/* x3 <- Runtime &__rel_dyn_end */
+pie_fix_loop:
+	ldp	x0, x1, [x2], #16	/* (x0, x1) <- (Link location, fixup) */
+	ldr	x4, [x2], #8		/* x4 <- addend */
+	cmp	w1, #1027		/* relative fixup? */
+	bne	pie_skip_reloc
+	/* relative fix: store addend plus offset at dest location */
+	add	x0, x0, x9
+	add	x4, x4, x9
+	str	x4, [x0]
+pie_skip_reloc:
+	cmp	x2, x3
+	b.lo	pie_fix_loop
+pie_fixup_done:
+#endif
 
 #ifdef CONFIG_SYS_RESET_SCTRL
 	bl reset_sctrl
@@ -84,6 +115,43 @@ save_boot_params_ret:
 	mov	x0, #3 << 20
 	msr	cpacr_el1, x0			/* Enable FP/SIMD */
 0:
+
+	/*
+	 * Enable instruction cache (if required), stack pointer,
+	 * data access alignment checks and SError.
+	 */
+#ifndef CONFIG_SYS_ICACHE_OFF
+	mov x1, #CR_I
+#else
+	mov x1, #0
+#endif
+	switch_el x2, 3f, 2f, 1f
+3:	mrs	x0, sctlr_el3
+	orr	x0, x0, x1
+	msr	sctlr_el3, x0
+#ifndef CONFIG_SUPPORT_USBPLUG
+	msr	daifclr, #4			/* Enable SError. SCR_EL3.EA=1 was already set in start.S */
+#endif
+	b	0f
+2:	mrs	x0, sctlr_el2
+	orr	x0, x0, x1
+	msr	sctlr_el2, x0
+
+	mrs	x0, hcr_el2
+	orr	x0, x0, #HCR_EL2_TGE
+	orr	x0, x0, #HCR_EL2_AMO
+#if CONFIG_IS_ENABLED(IRQ)
+	orr	x0, x0, #HCR_EL2_IMO
+#endif
+	msr	hcr_el2, x0
+	msr	daifclr, #4
+	b	0f
+1:	mrs	x0, sctlr_el1
+	orr	x0, x0, x1
+	msr	sctlr_el1, x0
+	msr	daifclr, #4
+0:
+	isb
 
 	/*
 	 * Enable SMPEN bit for coherency.
@@ -129,6 +197,43 @@ slave_cpu:
 	cbz	x0, slave_cpu
 	br	x0			/* branch to the given address */
 #endif /* CONFIG_ARMV8_MULTIENTRY */
+
+#if defined(CONFIG_SPL_BUILD) && defined(CONFIG_ARM_SMP)
+	mrs	x0, mpidr_el1
+	and x0, x0, #0xfff
+	cmp x0, #0
+	beq master_cpu
+
+#ifdef SMP_CPU1
+	cmp x0, #(SMP_CPU1)
+	ldr x1, =(SMP_CPU1_STACK)
+	beq slave_cpu
+#endif
+
+#ifdef SMP_CPU2
+	cmp x0, #(SMP_CPU2)
+	ldr x1, =(SMP_CPU2_STACK)
+	beq slave_cpu
+#endif
+
+#ifdef SMP_CPU3
+	cmp x0, #(SMP_CPU3)
+	ldr x1, =(SMP_CPU3_STACK)
+	beq slave_cpu
+#endif
+	dsb sy
+	isb
+
+loop:
+	wfe
+	b loop
+
+slave_cpu:
+	bic	sp, x1, #0xf
+	bl	smp_entry
+	b	loop
+#endif
+
 master_cpu:
 	bl	_main
 
@@ -231,7 +336,7 @@ ENDPROC(apply_core_errata)
 WEAK(lowlevel_init)
 	mov	x29, lr			/* Save LR */
 
-#if defined(CONFIG_GICV2) || defined(CONFIG_GICV3)
+#if CONFIG_IS_ENABLED(IRQ)
 	branch_if_slave x0, 1f
 	ldr	x0, =GICD_BASE
 	bl	gic_init_secure
@@ -312,3 +417,4 @@ ENDPROC(c_runtime_cpu_setup)
 WEAK(save_boot_params)
 	b	save_boot_params_ret	/* back to my caller */
 ENDPROC(save_boot_params)
+#endif

@@ -13,6 +13,7 @@
 #include <dm/device-internal.h>
 #include <dm/uclass-internal.h>
 #include "eth_internal.h"
+#include <eth_phy.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -69,8 +70,8 @@ struct udevice *eth_get_dev(void)
 
 	uc_priv = eth_get_uclass_priv();
 	if (!uc_priv->current)
-		eth_errno = uclass_first_device(UCLASS_ETH,
-				    &uc_priv->current);
+		uclass_first_device(UCLASS_ETH,
+			    &uc_priv->current);
 	return uc_priv->current;
 }
 
@@ -443,6 +444,10 @@ static int eth_post_bind(struct udevice *dev)
 		return -EINVAL;
 	}
 
+#ifdef CONFIG_DM_ETH_PHY
+	eth_phy_binds_nodes(dev);
+#endif
+
 	return 0;
 }
 
@@ -541,8 +546,8 @@ static int eth_pre_remove(struct udevice *dev)
 	return 0;
 }
 
-UCLASS_DRIVER(eth) = {
-	.name		= "eth",
+UCLASS_DRIVER(ethernet) = {
+	.name		= "ethernet",
 	.id		= UCLASS_ETH,
 	.post_bind	= eth_post_bind,
 	.pre_unbind	= eth_pre_unbind,

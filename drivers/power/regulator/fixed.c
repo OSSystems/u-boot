@@ -36,18 +36,21 @@ static int fixed_regulator_ofdata_to_platdata(struct udevice *dev)
 
 	/* Set type to fixed */
 	uc_pdata->type = REGULATOR_TYPE_FIXED;
-
-	if (dev_read_bool(dev, "enable-active-high"))
+	if (!dev_read_bool(dev, "enable-active-high"))
+		flags |= GPIOD_ACTIVE_LOW;
+	if (dev_read_bool(dev, "regulator-boot-on"))
 		flags |= GPIOD_IS_OUT_ACTIVE;
 
 	/* Get fixed regulator optional enable GPIO desc */
 	gpio = &dev_pdata->gpio;
 	ret = gpio_request_by_name(dev, "gpio", 0, gpio, flags);
 	if (ret) {
-		debug("Fixed regulator optional enable GPIO - not found! Error: %d\n",
-		      ret);
-		if (ret != -ENOENT)
-			return ret;
+		ret = gpio_request_by_name(dev, "gpios", 0, gpio, flags);
+		if (ret) {
+			debug("Fixed regulator optional enable GPIO - not found! Error: %d\n", ret);
+			if (ret != -ENOENT)
+				return ret;
+		}
 	}
 
 	/* Get optional ramp up delay */
@@ -117,7 +120,7 @@ static int fixed_regulator_set_enable(struct udevice *dev, bool enable)
 
 	ret = dm_gpio_set_value(&dev_pdata->gpio, enable);
 	if (ret) {
-		error("Can't set regulator : %s gpio to: %d\n", dev->name,
+		pr_err("Can't set regulator : %s gpio to: %d\n", dev->name,
 		      enable);
 		return ret;
 	}

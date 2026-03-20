@@ -17,4 +17,16 @@ config IMX_THERMAL
           cpufreq is used as the cooling device to throttle CPUs when the
           passive trip is crossed.
 
+config ROCKCHIP_THERMAL
+	bool "Temperature sensor driver for Rockchip SoCs"
+	depends on CLK
+	help
+	  Support for Temperature Monitor (TEMPMON) found on Rockchip SoCs.
+
+config SY7636A_THERMAL
+	bool "Temperature sensor driver for sy7636a"
+	depends on PMIC_SY7636A
+	help
+	  Support for Temperature Monitor (TEMPMON) found on sy7636a.
+
 endif # if DM_THERMAL

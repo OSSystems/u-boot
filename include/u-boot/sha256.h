@@ -13,6 +13,11 @@ typedef struct {
 	uint32_t total[2];
 	uint32_t state[8];
 	uint8_t buffer[64];
+
+#if !defined(USE_HOSTCC)
+    struct udevice *cdev;
+    u32 length; /* Data total length */
+#endif
 } sha256_context;
 
 void sha256_starts(sha256_context * ctx);
@@ -21,5 +26,7 @@ void sha256_finish(sha256_context * ctx, uint8_t digest[SHA256_SUM_LEN]);
 
 void sha256_csum_wd(const unsigned char *input, unsigned int ilen,
 		unsigned char *output, unsigned int chunk_sz);
+void sha256_csum(const unsigned char *input, unsigned int ilen,
+		 unsigned char *output);
 
 #endif /* _SHA256_H */
