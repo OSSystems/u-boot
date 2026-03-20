@@ -442,7 +442,7 @@ internal_phase:
 	plat->mmc.default_phase =
 		dev_read_u32_default(dev, "default-sample-phase", 0);
 #ifdef CONFIG_ROCKCHIP_RV1106
-	if (!(ret < 0) && (&priv->sample_clk)) {
+	if (ret >= 0) {
 		ret = clk_set_phase(&priv->sample_clk, plat->mmc.default_phase);
 		if (ret < 0)
 			debug("MMC: can not set default phase!\n");
