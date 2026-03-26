@@ -42,5 +42,13 @@
 
 #include <configs/updatehub-common.h>
 
+/* Redefine to include UPDATEHUB_ENV (now in scope after the include) */
+#undef CONFIG_EXTRA_ENV_SETTINGS
+#define CONFIG_EXTRA_ENV_SETTINGS	\
+	ENV_MEM_LAYOUT_SETTINGS		\
+	ROCKCHIP_DEVICE_SETTINGS	\
+	RKIMG_DET_BOOTDEV		\
+	UPDATEHUB_ENV
+
 #endif /* !CONFIG_SPL_BUILD */
 #endif /* __EVB_RV1106_H */
