@@ -18,23 +18,25 @@
 #define CONFIG_CONSOLE_SCROLL_LINES            10
 
 #ifndef CONFIG_SPL_BUILD
-#undef CONFIG_BOOTCOMMAND
 
-/*
- * We made a deal: Not allow U-Boot to bring up thunder-boot kernel.
- *
- * Because the thunder-boot feature may require special memory layout
- * or other appointments, U-Boot can't handle all that. Let's go back
- * to SPL to bring up kernel.
- *
- * Note: bootcmd is only called in normal boot sequence, that means
- * we allow user to boot what they want in U-Boot shell mode.
- */
-#ifdef CONFIG_SPL_KERNEL_BOOT
-#define CONFIG_BOOTCOMMAND "reset"
-#else
-#define CONFIG_BOOTCOMMAND RKIMG_BOOTCOMMAND
-#endif
+/* UpdateHub A/B boot scheme for RV1106 SPI NAND */
+#define UPDATEHUB_FIND_ROOT_A \
+	"ubi part rootfs; ubifsmount ubi0:system_a; setenv ubi_root_vol system_a"
+#define UPDATEHUB_FIND_ROOT_B \
+	"ubi part rootfs; ubifsmount ubi0:system_b; setenv ubi_root_vol system_b"
+#define UPDATEHUB_LOAD_OS_A \
+	"ubifsload ${kernel_addr_r} /boot/zImage; " \
+	"ubifsload ${fdt_addr_r} /boot/rv1106g-luckfox-pico-pro-max.dtb"
+#define UPDATEHUB_LOAD_OS_B \
+	"ubifsload ${kernel_addr_r} /boot/zImage; " \
+	"ubifsload ${fdt_addr_r} /boot/rv1106g-luckfox-pico-pro-max.dtb"
+#define UPDATEHUB_BOOTARGS \
+	"earlycon=uart8250,mmio32,0xff4c0000 console=ttyFIQ0 " \
+	"ubi.mtd=3 root=ubi0:${ubi_root_vol} rootfstype=ubifs rootwait"
+#define UPDATEHUB_BOOTCMD \
+	"bootz ${kernel_addr_r} - ${fdt_addr_r}"
+
+#include <configs/updatehub-common.h>
 
 #endif /* !CONFIG_SPL_BUILD */
 #endif /* __EVB_RV1106_H */
