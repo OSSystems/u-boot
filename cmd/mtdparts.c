@@ -1573,11 +1573,8 @@ static int parse_mtdparts(const char *const mtdparts)
 	if (!p)
 		p = mtdparts;
 
-	if (strncmp(p, "mtdparts=", 9) != 0) {
-		printf("mtdparts variable doesn't start with 'mtdparts='\n");
-		return err;
-	}
-	p += 9;
+	if (strncmp(p, "mtdparts=", 9) == 0)
+		p += 9;
 
 	while (*p != '\0') {
 		err = 1;
