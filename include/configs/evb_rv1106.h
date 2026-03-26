@@ -19,6 +19,10 @@
 
 #ifndef CONFIG_SPL_BUILD
 
+/* Bootcount via environment for UpdateHub A/B failover */
+#define CONFIG_BOOTCOUNT_LIMIT
+#define CONFIG_BOOTCOUNT_ENV
+
 /* UpdateHub A/B boot scheme for RV1106 SPI NAND */
 #define UPDATEHUB_FIND_ROOT_A \
 	"ubi part rootfs; ubifsmount ubi0:system_a; setenv ubi_root_vol system_a"
