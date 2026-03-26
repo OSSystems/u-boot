@@ -62,7 +62,7 @@ CONFIG_CMD_MTD=y
 CONFIG_CMD_UBI=y
 CONFIG_CMD_UBIFS=y
 CONFIG_MTDIDS_DEFAULT="spi-nand0=spi-nand0"
-CONFIG_MTDPARTS_DEFAULT="mtdparts=spi-nand0:256K(env),256K@256K(idblock),512K(uboot),4M(boot),250M(rootfs)"
+CONFIG_MTDPARTS_DEFAULT="mtdparts=spi-nand0:256K(env),256K@256K(idblock),512K(uboot),254M(rootfs)"
 CONFIG_CMD_PART=y
 # CONFIG_CMD_ITEST is not set
 CONFIG_CMD_SCRIPT_UPDATE=y
@@ -82,7 +82,7 @@ CONFIG_OF_LIVE=y
 CONFIG_OF_SPL_REMOVE_PROPS="interrupt-parent assigned-clocks assigned-clock-rates assigned-clock-parents"
 CONFIG_OF_U_BOOT_REMOVE_PROPS="interrupt-parent"
 CONFIG_ENVF=y
-CONFIG_ENVF_LIST="blkdevparts mtdparts mtdids sys_bootargs app reserved ipaddr serverip netmask gatewayip ethaddr"
+CONFIG_ENVF_LIST="blkdevparts mtdparts mtdids sys_bootargs bootcmd app reserved ipaddr serverip netmask gatewayip ethaddr"
 CONFIG_REGMAP=y
 CONFIG_SPL_REGMAP=y
 CONFIG_SYSCON=y
