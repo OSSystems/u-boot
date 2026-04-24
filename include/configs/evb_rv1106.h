@@ -23,20 +23,20 @@
 #define CONFIG_BOOTCOUNT_LIMIT
 #define CONFIG_BOOTCOUNT_ENV
 
-/* UpdateHub A/B boot scheme for RV1106 SPI NAND */
+/* UpdateHub A/B boot scheme for RV1106 SD card */
 #define UPDATEHUB_FIND_ROOT_A \
-	"ubi part rootfs; ubifsmount ubi0:system_a; setenv ubi_root_vol system_a"
+	"setenv rootdev /dev/mmcblk1p1"
 #define UPDATEHUB_FIND_ROOT_B \
-	"ubi part rootfs; ubifsmount ubi0:system_b; setenv ubi_root_vol system_b"
+	"setenv rootdev /dev/mmcblk1p2"
 #define UPDATEHUB_LOAD_OS_A \
-	"ubifsload ${kernel_addr_r} /boot/zImage; " \
-	"ubifsload ${fdt_addr_r} /boot/rv1106g-luckfox-pico-pro-max.dtb"
+	"ext4load mmc 1:1 ${kernel_addr_r} /boot/zImage; " \
+	"ext4load mmc 1:1 ${fdt_addr_r} /boot/rv1106g-luckfox-pico-pro-max.dtb"
 #define UPDATEHUB_LOAD_OS_B \
-	"ubifsload ${kernel_addr_r} /boot/zImage; " \
-	"ubifsload ${fdt_addr_r} /boot/rv1106g-luckfox-pico-pro-max.dtb"
+	"ext4load mmc 1:2 ${kernel_addr_r} /boot/zImage; " \
+	"ext4load mmc 1:2 ${fdt_addr_r} /boot/rv1106g-luckfox-pico-pro-max.dtb"
 #define UPDATEHUB_BOOTARGS \
 	"earlycon=uart8250,mmio32,0xff4c0000 console=ttyFIQ0 " \
-	"ubi.mtd=3 root=ubi0:${ubi_root_vol} rootfstype=ubifs rootwait"
+	"root=${rootdev} rootfstype=ext4 rootwait"
 #define UPDATEHUB_BOOTCMD \
 	"bootz ${kernel_addr_r} - ${fdt_addr_r}"
 
