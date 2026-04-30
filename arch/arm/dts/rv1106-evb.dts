@@ -13,6 +13,11 @@
 	model = "Rockchip RV1106 EVB Board";
 	compatible = "rockchip,rv1106-evb", "rockchip,rv1106";
 
+	chosen {
+		stdout-path = &uart2;
+		u-boot,spl-boot-order = &emmc;
+	};
+
 	adc-keys {
 		compatible = "adc-keys";
 		io-channels = <&saradc 0>;
