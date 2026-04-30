@@ -80,6 +80,10 @@ static int env_init_parts(struct blk_desc *dev_desc, struct list_head *parts_hea
 	parts_list = envf_get(dev_desc, "mtdparts");
 	if (!parts_list)
 		parts_list = envf_get(dev_desc, "blkdevparts");
+	if (!parts_list)
+		parts_list = env_get("mtdparts");
+	if (!parts_list)
+		parts_list = env_get("blkdevparts");
 #else
 	parts_list = ENV_PARTITIONS;
 #endif
