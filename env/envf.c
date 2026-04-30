@@ -270,11 +270,13 @@ static int envf_load(void)
 		return 0;
 	}
 
+	envf_init_vars();
+
 	env = envf_read(desc);
 	if (!env)
 		return -EINVAL;
 
-	if (envf_init_vars() > 0) {
+	if (envf_num > 0) {
 		if (!himport_r(&env_htab, (char *)env->data, env_size, '\0',
 			H_NOCLEAR, 0, envf_num, (char * const *)envf_list)) {
 			ENVF_MSG("envf himport error: %d\n", errno);
