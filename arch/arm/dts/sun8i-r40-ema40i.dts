@@ -71,14 +71,6 @@
 
 #include "axp22x.dtsi"
 
-&mmc0 {
-	pinctrl-names = "default";
-	vmmc-supply = <&reg_dcdc1>;
-	bus-width = <4>;
-	cd-gpios = <&pio 7 19 GPIO_ACTIVE_LOW>; /* PH19 */
-	status = "okay";
-};
-
 &mmc2 {
 	vmmc-supply = <&reg_dcdc1>;
 	vqmmc-supply = <&reg_dcdc1>;
