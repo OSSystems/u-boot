@@ -175,7 +175,13 @@
 	status = "okay";
 };
 
+&usb_otg {
+	dr_mode = "peripheral";
+	status = "okay";
+};
+
 &usbphy {
+	usb0_vbus-supply = <&reg_vcc5v0>;
 	usb1_vbus-supply = <&reg_vcc5v0>;
 	status = "okay";
 };
