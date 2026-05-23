@@ -657,6 +657,15 @@
 				bias-pull-up;
 			};
 
+			/omit-if-no-ref/
+			mmc1_ph_pins: mmc1-ph-pins {
+				pins = "PH22", "PH23", "PH24",
+				       "PH25", "PH26", "PH27";
+				function = "mmc1";
+				drive-strength = <30>;
+				bias-pull-up;
+			};
+
 			mmc2_pins: mmc2-pins {
 				pins = "PC5", "PC6", "PC7", "PC8", "PC9",
 				       "PC10", "PC11", "PC12", "PC13", "PC14",
