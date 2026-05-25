@@ -1,0 +1,33 @@
+#include <config.h>
+
+#define ARCH "arm"
+
+/ {
+	aliases {
+		mmc0 = &mmc1;
+		mmc1 = &mmc2;
+	};
+
+	binman: binman {
+		multiple-images;
+	};
+};
+
+&binman {
+	u-boot-sunxi-with-spl {
+		filename = "u-boot-sunxi-with-spl.bin";
+		pad-byte = <0xff>;
+
+		blob {
+			/*
+			 * This value matches SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR
+			 * and SYS_SPI_U_BOOT_OFFS if those are defined.
+			 */
+			min-size = <0x8000>;
+			filename = "spl/sunxi-spl.bin";
+		};
+
+		u-boot-img {
+		};
+	};
+};
