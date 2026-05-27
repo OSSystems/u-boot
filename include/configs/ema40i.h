@@ -7,6 +7,7 @@
 
 #define CFG_ENV_FLAGS_LIST_STATIC \
 	"updatehub_active:dw," \
-	"upgrade_available:dw,"
+	"upgrade_available:dw," \
+	"bootcount:dw,"
 
 #endif /* __EMA40I_CONFIG_H */
