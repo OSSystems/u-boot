@@ -1,0 +1,55 @@
+// SPDX-License-Identifier: GPL-2.0-or-later OR BSD-3-Clause
+/*
+ * U-Boot additions for the Solar Manager Gateway (STM32MP135, 512 MiB).
+ * The board description itself is shared with Linux.
+ */
+
+#include "stm32mp13-u-boot.dtsi"
+
+/ {
+	aliases {
+		/* Keep the numbering the boot scripts rely on: mmc 1 is the eMMC */
+		mmc0 = &sdmmc1;
+		mmc1 = &sdmmc2;
+		usb0 = &usbotg_hs;
+	};
+
+	config {
+		u-boot,mmc-env-partition = "u-boot-env";
+		st,adc_usb_pd = <&adc1 6>, <&adc1 12>;
+	};
+};
+
+&uart4 {
+	bootph-all;
+};
+
+&uart4_pins_a {
+	bootph-all;
+	pins1 {
+		bootph-all;
+	};
+	pins2 {
+		bootph-all;
+	};
+};
+
+/*
+ * usbphyc is probed before relocation (it provides ck_usbo_48m to the RCC)
+ * and fails as a whole if any port lacks a phy-supply, although only port 1
+ * is wired on this board.
+ */
+&usbphyc_port0 {
+	phy-supply = <&vdd_usb>;
+};
+
+&vdd_usb {
+	bootph-all;
+};
+
+&usbotg_hs {
+	/* U-Boot only uses the OTG port as a gadget (DFU, UMS) */
+	dr_mode = "peripheral";
+	u-boot,force-b-session-valid;
+	u-boot,force-vbus-detection;
+};

@@ -1079,6 +1079,9 @@ dtb-$(CONFIG_ASPEED_AST2600) += \
 dtb-$(CONFIG_STM32MP15X) += \
 	stm32mp157c-odyssey.dtb
 
+dtb-$(CONFIG_STM32MP13X) += \
+	sm-stm32mp135x-512m.dtb
+
 dtb-$(CONFIG_SOC_K3_AM654) += \
 	k3-am654-r5-base-board.dtb
 
