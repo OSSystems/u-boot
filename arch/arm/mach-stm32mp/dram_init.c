@@ -63,6 +63,38 @@ int dram_init(void)
 	return 0;
 }
 
+/*
+ * Move [reg, reg + size) below any reserved-memory region it overlaps. OP-TEE
+ * may protect other regions next to its own, such as a secure framebuffer,
+ * and U-Boot must not relocate into them.
+ */
+static phys_addr_t stm32mp_skip_reserved_memory(phys_addr_t reg, phys_size_t size)
+{
+	ofnode parent, node;
+	fdt_addr_t start;
+	fdt_size_t len;
+	bool moved;
+
+	parent = ofnode_path("/reserved-memory");
+	if (!ofnode_valid(parent))
+		return reg;
+
+	do {
+		moved = false;
+		ofnode_for_each_subnode(node, parent) {
+			start = ofnode_get_addr_size(node, "reg", &len);
+			if (start == FDT_ADDR_T_NONE || !len)
+				continue;
+			if (start < reg + size && start + len > reg) {
+				reg = ALIGN_DOWN(start - size, MMU_SECTION_SIZE);
+				moved = true;
+			}
+		}
+	} while (moved);
+
+	return reg;
+}
+
 phys_addr_t board_get_usable_ram_top(phys_size_t total_size)
 {
 	phys_size_t size;
@@ -87,6 +119,7 @@ phys_addr_t board_get_usable_ram_top(phys_size_t total_size)
 	if (IS_ENABLED(CONFIG_STM32MP13X) || IS_ENABLED(CONFIG_STM32MP15X)) {
 		if (!optee_get_reserved_memory(&optee_start, &optee_size))
 			reg = ALIGN(optee_start - size, MMU_SECTION_SIZE);
+		reg = stm32mp_skip_reserved_memory(reg, size);
 	}
 
 	/* before relocation, mark the U-Boot memory as cacheable by default */
