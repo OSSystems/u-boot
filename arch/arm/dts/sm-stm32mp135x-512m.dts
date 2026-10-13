@@ -1,0 +1,482 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
+/*
+ * Solar Manager Gateway (stm32mp135x-gateway-r1): STM32MP135F with 512 MiB of
+ * DDR, eMMC, microSD, Gigabit Ethernet, RS485, two relays and one analog output.
+ */
+
+/dts-v1/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+#include <dt-bindings/leds/common.h>
+#include <dt-bindings/regulator/st,stm32mp13-regulator.h>
+#include "stm32mp135.dtsi"
+#include "stm32mp13xf.dtsi"
+#include "stm32mp13-pinctrl.dtsi"
+
+/ {
+	model = "Solar Manager Gateway";
+	compatible = "solarmanager,stm32mp135x-gateway-r1", "st,stm32mp135";
+
+	aliases {
+		ethernet0 = &ethernet1;
+		serial0 = &uart4;
+		serial1 = &uart5;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	memory@c0000000 {
+		device_type = "memory";
+		reg = <0xc0000000 0x20000000>;
+	};
+
+	reserved-memory {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		/* OP-TEE: 16 MiB secure framebuffer, then 32 MiB for its core */
+		optee@dd000000 {
+			reg = <0xdd000000 0x3000000>;
+			no-map;
+		};
+	};
+
+	gpio-keys {
+		compatible = "gpio-keys";
+
+		button-0 {
+			label = "usr_button";
+			linux,code = <KEY_ENTER>;
+			interrupt-parent = <&gpioi>;
+			interrupts = <1 IRQ_TYPE_EDGE_RISING>;
+		};
+	};
+
+	/* Status LED, next to the RGB LED of pwm-outputs */
+	leds {
+		compatible = "gpio-leds";
+
+		led-blue {
+			function = LED_FUNCTION_HEARTBEAT;
+			color = <LED_COLOR_ID_BLUE>;
+			gpios = <&gpioh 12 GPIO_ACTIVE_LOW>;
+			linux,default-trigger = "heartbeat";
+			default-state = "off";
+		};
+	};
+
+	pwm-outputs {
+		compatible = "pwm-leds";
+
+		/* Analog output AO1, 0-10 V from TIM1_CH3 */
+		ao10 {
+			label = "ao10";
+			pwms = <&pwm1 2 100000 0>;
+			max-brightness = <255>;
+		};
+
+		/* RGB LED, open drain, active low */
+		led-red {
+			pwms = <&pwm4 0 100000 1>;
+			max-brightness = <255>;
+		};
+
+		led-green {
+			pwms = <&pwm4 1 100000 1>;
+			max-brightness = <255>;
+		};
+
+		led-blue {
+			pwms = <&pwm4 2 100000 1>;
+			max-brightness = <255>;
+		};
+	};
+
+	v3v3: regulator-3v3 {
+		compatible = "regulator-fixed";
+		regulator-name = "v3v3";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+	};
+
+	usb-a-connector {
+		compatible = "usb-a-connector";
+		label = "USB";
+		vbus-gpios = <&gpioi 7 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>;
+
+		port {
+			con_usbotg_hs_ep: endpoint {
+				remote-endpoint = <&usbotg_hs_ep>;
+			};
+		};
+	};
+};
+
+&adc_1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&adc1_pins_sm>;
+	vdda-supply = <&v3v3>;
+	vref-supply = <&v3v3>;
+	vdd-supply = <&v3v3>;
+	status = "okay";
+};
+
+&adc1 {
+	status = "okay";
+
+	channel@2 {
+		reg = <2>;
+		st,min-sample-time-ns = <5000>;
+	};
+
+	channel@8 {
+		reg = <8>;
+		st,min-sample-time-ns = <5000>;
+	};
+};
+
+/*
+ * The CPU frequency is set by OP-TEE through the SCMI performance protocol,
+ * from the operating points of the OP-TEE devicetree.
+ */
+&cpu0 {
+	power-domains = <&scmi_perf 0>;
+	power-domain-names = "perf";
+};
+
+&crc1 {
+	status = "okay";
+};
+
+&cryp {
+	status = "okay";
+};
+
+&dts {
+	status = "okay";
+};
+
+&ethernet1 {
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&eth1_rgmii_pins_sm>;
+	pinctrl-1 = <&eth1_rgmii_sleep_pins_sm>;
+	phy-mode = "rgmii-id";
+	max-speed = <1000>;
+	phy-handle = <&phy0_eth1>;
+	st,ext-phyclk;
+	status = "okay";
+
+	mdio1 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "snps,dwmac-mdio";
+
+		/*
+		 * Motorcomm YT8521. The PHY is held in reset until the MDIO bus
+		 * probes, so its ID can not be read and has to be given here.
+		 */
+		phy0_eth1: ethernet-phy@0 {
+			compatible = "ethernet-phy-id0000.011a";
+			reg = <0>;
+			reset-gpios = <&gpiob 10 GPIO_ACTIVE_LOW>;
+			reset-assert-us = <1000>;
+			reset-deassert-us = <2000>;
+		};
+	};
+};
+
+&i2c3 {
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&i2c3_pins_sm>;
+	pinctrl-1 = <&i2c3_sleep_pins_sm>;
+	i2c-scl-rising-time-ns = <300>;
+	i2c-scl-falling-time-ns = <300>;
+	clock-frequency = <100000>;
+	/delete-property/dmas;
+	/delete-property/dma-names;
+	status = "okay";
+};
+
+&iwdg2 {
+	timeout-sec = <32>;
+	status = "okay";
+};
+
+&pinctrl {
+	adc1_pins_sm: adc1-pins-sm {
+		pins {
+			pinmux = <STM32_PINMUX('A', 5, ANALOG)>, /* ADC1_INP2 */
+				 <STM32_PINMUX('F', 11, ANALOG)>; /* ADC1_INP8 */
+		};
+	};
+
+	eth1_rgmii_pins_sm: eth1-rgmii-sm {
+		pins1 {
+			pinmux = <STM32_PINMUX('B', 11, AF11)>, /* ETH1_RGMII_TX_CTL */
+				 <STM32_PINMUX('C', 1, AF11)>, /* ETH1_RGMII_GTX_CLK */
+				 <STM32_PINMUX('C', 2, AF11)>, /* ETH1_RGMII_TXD2 */
+				 <STM32_PINMUX('E', 5, AF10)>, /* ETH1_RGMII_TXD3 */
+				 <STM32_PINMUX('F', 12, AF11)>, /* ETH1_RGMII_CLK125 */
+				 <STM32_PINMUX('G', 2, AF11)>, /* ETH1_MDC */
+				 <STM32_PINMUX('G', 13, AF11)>, /* ETH1_RGMII_TXD0 */
+				 <STM32_PINMUX('G', 14, AF11)>; /* ETH1_RGMII_TXD1 */
+			bias-disable;
+			drive-push-pull;
+			slew-rate = <2>;
+		};
+
+		pins2 {
+			pinmux = <STM32_PINMUX('A', 2, AF11)>; /* ETH1_MDIO */
+			bias-disable;
+			drive-push-pull;
+			slew-rate = <0>;
+		};
+
+		pins3 {
+			pinmux = <STM32_PINMUX('A', 1, AF11)>, /* ETH1_RGMII_RX_CLK */
+				 <STM32_PINMUX('A', 7, AF11)>, /* ETH1_RGMII_RX_CTL */
+				 <STM32_PINMUX('B', 0, AF11)>, /* ETH1_RGMII_RXD2 */
+				 <STM32_PINMUX('B', 1, AF11)>, /* ETH1_RGMII_RXD3 */
+				 <STM32_PINMUX('C', 4, AF11)>, /* ETH1_RGMII_RXD0 */
+				 <STM32_PINMUX('C', 5, AF11)>; /* ETH1_RGMII_RXD1 */
+			bias-disable;
+		};
+	};
+
+	eth1_rgmii_sleep_pins_sm: eth1-rgmii-sleep-sm {
+		pins {
+			pinmux = <STM32_PINMUX('A', 1, ANALOG)>, /* ETH1_RGMII_RX_CLK */
+				 <STM32_PINMUX('A', 2, ANALOG)>, /* ETH1_MDIO */
+				 <STM32_PINMUX('A', 7, ANALOG)>, /* ETH1_RGMII_RX_CTL */
+				 <STM32_PINMUX('B', 0, ANALOG)>, /* ETH1_RGMII_RXD2 */
+				 <STM32_PINMUX('B', 1, ANALOG)>, /* ETH1_RGMII_RXD3 */
+				 <STM32_PINMUX('B', 11, ANALOG)>, /* ETH1_RGMII_TX_CTL */
+				 <STM32_PINMUX('C', 1, ANALOG)>, /* ETH1_RGMII_GTX_CLK */
+				 <STM32_PINMUX('C', 2, ANALOG)>, /* ETH1_RGMII_TXD2 */
+				 <STM32_PINMUX('C', 4, ANALOG)>, /* ETH1_RGMII_RXD0 */
+				 <STM32_PINMUX('C', 5, ANALOG)>, /* ETH1_RGMII_RXD1 */
+				 <STM32_PINMUX('E', 5, ANALOG)>, /* ETH1_RGMII_TXD3 */
+				 <STM32_PINMUX('F', 12, ANALOG)>, /* ETH1_RGMII_CLK125 */
+				 <STM32_PINMUX('G', 2, ANALOG)>, /* ETH1_MDC */
+				 <STM32_PINMUX('G', 13, ANALOG)>, /* ETH1_RGMII_TXD0 */
+				 <STM32_PINMUX('G', 14, ANALOG)>; /* ETH1_RGMII_TXD1 */
+		};
+	};
+
+	i2c3_pins_sm: i2c3-sm {
+		pins {
+			pinmux = <STM32_PINMUX('H', 3, AF4)>, /* I2C3_SCL */
+				 <STM32_PINMUX('H', 7, AF5)>; /* I2C3_SDA */
+			bias-disable;
+			drive-open-drain;
+			slew-rate = <0>;
+		};
+	};
+
+	i2c3_sleep_pins_sm: i2c3-sleep-sm {
+		pins {
+			pinmux = <STM32_PINMUX('H', 3, ANALOG)>, /* I2C3_SCL */
+				 <STM32_PINMUX('H', 7, ANALOG)>; /* I2C3_SDA */
+		};
+	};
+
+	pwm1_pins_sm: pwm1-sm {
+		pins {
+			pinmux = <STM32_PINMUX('A', 10, AF1)>; /* TIM1_CH3 */
+			bias-disable;
+			drive-push-pull;
+			slew-rate = <0>;
+		};
+	};
+
+	pwm4_pins_sm: pwm4-sm {
+		pins {
+			pinmux = <STM32_PINMUX('D', 12, AF2)>, /* TIM4_CH1 */
+				 <STM32_PINMUX('B', 7, AF2)>, /* TIM4_CH2 */
+				 <STM32_PINMUX('B', 8, AF2)>; /* TIM4_CH3 */
+			bias-pull-up;
+			drive-open-drain;
+			slew-rate = <0>;
+		};
+	};
+
+	pwm4_sleep_pins_sm: pwm4-sleep-sm {
+		pins {
+			pinmux = <STM32_PINMUX('D', 12, ANALOG)>, /* TIM4_CH1 */
+				 <STM32_PINMUX('B', 7, ANALOG)>, /* TIM4_CH2 */
+				 <STM32_PINMUX('B', 8, ANALOG)>; /* TIM4_CH3 */
+			bias-pull-up;
+		};
+	};
+
+	uart5_pins_sm: uart5-sm {
+		pins1 {
+			pinmux = <STM32_PINMUX('A', 0, AF8)>; /* UART5_TX */
+			bias-disable;
+			drive-push-pull;
+			slew-rate = <0>;
+		};
+
+		pins2 {
+			pinmux = <STM32_PINMUX('F', 13, AF8)>; /* UART5_RX */
+			bias-pull-up;
+		};
+	};
+
+	uart5_idle_pins_sm: uart5-idle-sm {
+		pins1 {
+			pinmux = <STM32_PINMUX('A', 0, ANALOG)>; /* UART5_TX */
+		};
+
+		pins2 {
+			pinmux = <STM32_PINMUX('F', 13, AF8)>; /* UART5_RX */
+			bias-pull-up;
+		};
+	};
+
+	uart5_sleep_pins_sm: uart5-sleep-sm {
+		pins {
+			pinmux = <STM32_PINMUX('A', 0, ANALOG)>, /* UART5_TX */
+				 <STM32_PINMUX('F', 13, ANALOG)>; /* UART5_RX */
+		};
+	};
+};
+
+/* The console RX is pulled up on this board, unlike on the DK */
+&{uart4_pins_a/pins2} {
+	/delete-property/ bias-disable;
+	bias-pull-up;
+};
+
+&{uart4_idle_pins_a/pins2} {
+	/delete-property/ bias-disable;
+	bias-pull-up;
+};
+
+&rtc {
+	status = "okay";
+};
+
+&scmi {
+	scmi_perf: protocol@13 {
+		reg = <0x13>;
+		#power-domain-cells = <1>;
+	};
+};
+
+/* SD card */
+&sdmmc1 {
+	pinctrl-names = "default", "opendrain", "sleep";
+	pinctrl-0 = <&sdmmc1_b4_pins_a &sdmmc1_clk_pins_a>;
+	pinctrl-1 = <&sdmmc1_b4_od_pins_a &sdmmc1_clk_pins_a>;
+	pinctrl-2 = <&sdmmc1_b4_sleep_pins_a>;
+	cd-gpios = <&gpioh 4 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+	disable-wp;
+	st,neg-edge;
+	bus-width = <4>;
+	vmmc-supply = <&v3v3>;
+	status = "okay";
+};
+
+/*
+ * eMMC. The SDMMC is kept on the first variant of the IP (0x10153180) as since
+ * the board bring-up; the default variant of the SoC is not validated here.
+ */
+&sdmmc2 {
+	arm,primecell-periphid = <0x10153180>;
+	pinctrl-names = "default", "opendrain", "sleep";
+	pinctrl-0 = <&sdmmc2_b4_pins_a &sdmmc2_d47_pins_a &sdmmc2_clk_pins_a>;
+	pinctrl-1 = <&sdmmc2_b4_od_pins_a &sdmmc2_d47_pins_a &sdmmc2_clk_pins_a>;
+	pinctrl-2 = <&sdmmc2_b4_sleep_pins_a &sdmmc2_d47_sleep_pins_a>;
+	non-removable;
+	no-sd;
+	no-sdio;
+	st,neg-edge;
+	bus-width = <8>;
+	vmmc-supply = <&v3v3>;
+	vqmmc-supply = <&v3v3>;
+	status = "okay";
+};
+
+&timers1 {
+	/delete-property/dmas;
+	/delete-property/dma-names;
+	status = "okay";
+
+	pwm1: pwm {
+		pinctrl-names = "default";
+		pinctrl-0 = <&pwm1_pins_sm>;
+		status = "okay";
+	};
+};
+
+&timers4 {
+	/delete-property/dmas;
+	/delete-property/dma-names;
+	status = "okay";
+
+	pwm4: pwm {
+		pinctrl-names = "default", "sleep";
+		pinctrl-0 = <&pwm4_pins_sm>;
+		pinctrl-1 = <&pwm4_sleep_pins_sm>;
+		status = "okay";
+	};
+};
+
+/* Console */
+&uart4 {
+	pinctrl-names = "default", "sleep", "idle";
+	pinctrl-0 = <&uart4_pins_a>;
+	pinctrl-1 = <&uart4_sleep_pins_a>;
+	pinctrl-2 = <&uart4_idle_pins_a>;
+	/delete-property/dmas;
+	/delete-property/dma-names;
+	status = "okay";
+};
+
+/* RS485 */
+&uart5 {
+	pinctrl-names = "default", "sleep", "idle";
+	pinctrl-0 = <&uart5_pins_sm>;
+	pinctrl-1 = <&uart5_sleep_pins_sm>;
+	pinctrl-2 = <&uart5_idle_pins_sm>;
+	status = "okay";
+};
+
+&usbotg_hs {
+	phys = <&usbphyc_port1 0>;
+	phy-names = "usb2-phy";
+	usb-role-switch;
+	dr_mode = "otg";
+	role-switch-default-mode = "peripheral";
+	status = "okay";
+
+	port {
+		usbotg_hs_ep: endpoint {
+			remote-endpoint = <&con_usbotg_hs_ep>;
+		};
+	};
+};
+
+&usbphyc {
+	status = "okay";
+};
+
+&usbphyc_port1 {
+	phy-supply = <&v3v3>;
+	st,current-boost-microamp = <1000>;
+	st,decrease-hs-slew-rate;
+	st,tune-hs-dc-level = <2>;
+	st,enable-hs-rftime-reduction;
+	st,trim-hs-current = <11>;
+	st,trim-hs-impedance = <2>;
+	st,tune-squelch-level = <1>;
+	st,enable-hs-rx-gain-eq;
+	st,no-hs-ftime-ctrl;
+	st,no-lsfs-sc;
+};
